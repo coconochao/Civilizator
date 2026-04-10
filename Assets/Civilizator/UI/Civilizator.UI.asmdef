@@ -4,7 +4,8 @@
     "references": [
         "Civilizator.Presentation",
         "UnityEngine.UI",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.InputSystem.ForUI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
