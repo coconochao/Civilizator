@@ -1,0 +1,31 @@
+{
+    "name": "CivilizatorInput",
+    "maps": [
+        {
+            "name": "Camera",
+            "id": "c1a2b3c4-d5e6-4789-a012-3456789abcde",
+            "actions": [
+                {
+                    "name": "Pan",
+                    "type": "Value",
+                    "id": "d2b3c4d5-e6f7-4890-b123-456789abcdef",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Zoom",
+                    "type": "Value",
+                    "id": "e3c4d5e6-f7a8-4901-c234-56789abcdef0",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": []
+        }
+    ],
+    "controlSchemes": []
+}

@@ -47,7 +47,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-003** — Create `Civilizator.Simulation` assembly
 - [x] **T-004** — Create `Civilizator.Presentation` assembly
 - [x] **T-005** — Create `Civilizator.UI` assembly
-- [ ] **T-006** — Create `Civilizator.Input` assembly
+- [x] **T-006** — Create `Civilizator.Input` assembly
 - [ ] **T-007** — Wire assembly references (no cycles)
 - [ ] **T-008** — Install/enable **Input System**; add Input System UI module stub
 
@@ -912,4 +912,6 @@ Format: `YYYY-MM-DD | T-xxx | note`
 - 2026-04-10 | T-004 | `Assets/Civilizator/Presentation/Civilizator.Presentation.asmdef` references `Civilizator.Simulation`; stub `PresentationAssemblyMarker.cs` (`MonoBehaviour`, touches `SimulationAssemblyMarker.Version`). Verified: `Unity -batchmode -nographics -quit -projectPath …` exit 0.
 
 - 2026-04-10 | T-005 | `Assets/Civilizator/UI/Civilizator.UI.asmdef` references `Civilizator.Presentation`, `UnityEngine.UI`, `Unity.InputSystem`; stub `UIAssemblyMarker.cs` (uGUI `Button`, `InputSystemUIInputModule`, `PresentationAssemblyMarker`). Verified: `Unity -batchmode -nographics -quit` exit 0; `Library/ScriptAssemblies/Civilizator.UI.dll` produced.
+
+- 2026-04-10 | T-006 | `Assets/Civilizator/Input/Civilizator.Input.asmdef` references `Unity.InputSystem`; placeholder `CivilizatorInput.inputactions` (Camera map: Pan, Zoom stubs); `InputAssemblyMarker.cs` (`InputActionAsset` field). Removed `Input/.gitkeep`. Verified: `Unity -batchmode -nographics -quit` exit 0; Bee/CSC produced `Library/ScriptAssemblies/Civilizator.Input.dll`.
 
