@@ -1,0 +1,4 @@
+repository "Civilizator/Civilizator@4674185062598@cloud"
+  path "/"
+    br "/main"
+    co "/main"
