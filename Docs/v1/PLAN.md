@@ -46,7 +46,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-002** — Add folder skeleton under `Assets/`
 - [x] **T-003** — Create `Civilizator.Simulation` assembly
 - [x] **T-004** — Create `Civilizator.Presentation` assembly
-- [ ] **T-005** — Create `Civilizator.UI` assembly
+- [x] **T-005** — Create `Civilizator.UI` assembly
 - [ ] **T-006** — Create `Civilizator.Input` assembly
 - [ ] **T-007** — Wire assembly references (no cycles)
 - [ ] **T-008** — Install/enable **Input System**; add Input System UI module stub
@@ -910,4 +910,6 @@ Format: `YYYY-MM-DD | T-xxx | note`
 - 2026-04-10 | T-003 | `Assets/Civilizator/Simulation/Civilizator.Simulation.asmdef` (`noEngineReferences: true`), stub `SimulationAssemblyMarker.cs` + `.meta` GUIDs. Verified: `Unity -batchmode -quit` on rsync copy without `Library` (exit 0); Bee log shows `Civilizator.Simulation.dll` compiled. Main tree locked if Editor has project open (batchmode on same path fails)
 
 - 2026-04-10 | T-004 | `Assets/Civilizator/Presentation/Civilizator.Presentation.asmdef` references `Civilizator.Simulation`; stub `PresentationAssemblyMarker.cs` (`MonoBehaviour`, touches `SimulationAssemblyMarker.Version`). Verified: `Unity -batchmode -nographics -quit -projectPath …` exit 0.
+
+- 2026-04-10 | T-005 | `Assets/Civilizator/UI/Civilizator.UI.asmdef` references `Civilizator.Presentation`, `UnityEngine.UI`, `Unity.InputSystem`; stub `UIAssemblyMarker.cs` (uGUI `Button`, `InputSystemUIInputModule`, `PresentationAssemblyMarker`). Verified: `Unity -batchmode -nographics -quit` exit 0; `Library/ScriptAssemblies/Civilizator.UI.dll` produced.
 
