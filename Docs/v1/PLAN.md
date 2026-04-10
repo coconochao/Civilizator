@@ -42,7 +42,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase A — Project & assemblies
 
-- [ ] **T-001** — Confirm Unity version & packages baseline
+- [x] **T-001** — Confirm Unity version & packages baseline
 - [ ] **T-002** — Add folder skeleton under `Assets/`
 - [ ] **T-003** — Create `Civilizator.Simulation` assembly
 - [ ] **T-004** — Create `Civilizator.Presentation` assembly
@@ -902,4 +902,6 @@ _Append one line per completed task (optional but recommended)._
 Format: `YYYY-MM-DD | T-xxx | note`
 
 - _Example: 2026-04-09 | T-001 | Unity 6000.x; Input System 1.14._
+
+- 2026-04-09 | T-001 | Unity 6000.4.1f1 (`ProjectSettings/ProjectVersion.txt` matches Hub). Packages (manifest): Input System 1.19.0, URP `com.unity.render-pipelines.universal` 17.4.0, AI Navigation 2.0.11, ugui 2.0.0, Test Framework 1.6.0, Timeline 1.8.11, Visual Scripting 1.9.11, Collab Proxy 2.11.4; remainder in `Packages/manifest.json`. Verified: `Unity -batchmode -nographics -quit` on fresh rsync copy without `Library` exited 0 (import + compile). If the main project folder is locked by an open editor, batchmode on that path aborts; use a copy or close the editor.
 
