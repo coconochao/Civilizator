@@ -54,7 +54,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 ### Phase B — Core simulation types
 
 - [x] **T-010** — Grid coordinates & Manhattan helpers (simulation)
-- [ ] **T-011** — Tile / map width-height constants (100×100)
+- [x] **T-011** — Tile / map width-height constants (100×100)
 - [ ] **T-012** — Natural node model (type + remaining amount, starts at 100)
 - [ ] **T-013** — Resource kind enum (Logs, Ore, Meat, PlantFood)
 - [ ] **T-014** — Building kind enum + footprint sizes (3×3 central, 2×2 others)
