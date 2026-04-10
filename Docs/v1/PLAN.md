@@ -48,7 +48,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-004** — Create `Civilizator.Presentation` assembly
 - [x] **T-005** — Create `Civilizator.UI` assembly
 - [x] **T-006** — Create `Civilizator.Input` assembly
-- [ ] **T-007** — Wire assembly references (no cycles)
+- [x] **T-007** — Wire assembly references (no cycles)
 - [ ] **T-008** — Install/enable **Input System**; add Input System UI module stub
 
 ### Phase B — Core simulation types
