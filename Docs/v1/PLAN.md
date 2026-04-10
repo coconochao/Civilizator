@@ -44,7 +44,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 - [x] **T-001** — Confirm Unity version & packages baseline
 - [x] **T-002** — Add folder skeleton under `Assets/`
-- [ ] **T-003** — Create `Civilizator.Simulation` assembly
+- [x] **T-003** — Create `Civilizator.Simulation` assembly
 - [ ] **T-004** — Create `Civilizator.Presentation` assembly
 - [ ] **T-005** — Create `Civilizator.UI` assembly
 - [ ] **T-006** — Create `Civilizator.Input` assembly
@@ -906,4 +906,6 @@ Format: `YYYY-MM-DD | T-xxx | note`
 - 2026-04-09 | T-001 | Unity 6000.4.1f1 (`ProjectSettings/ProjectVersion.txt` matches Hub). Packages (manifest): Input System 1.19.0, URP `com.unity.render-pipelines.universal` 17.4.0, AI Navigation 2.0.11, ugui 2.0.0, Test Framework 1.6.0, Timeline 1.8.11, Visual Scripting 1.9.11, Collab Proxy 2.11.4; remainder in `Packages/manifest.json`. Verified: `Unity -batchmode -nographics -quit` on fresh rsync copy without `Library` exited 0 (import + compile). If the main project folder is locked by an open editor, batchmode on that path aborts; use a copy or close the editor.
 
 - 2026-04-10 | T-002 | Folder skeleton under `Assets/Civilizator/`: `Simulation`, `Presentation`, `UI`, `Input`, `Pathfinding`, `Config` with `.gitkeep`; Unity folder/file `.meta` added for stable GUIDs. Headless `-batchmode` hit licensing handshake 505 / protocol mismatch in this run—verify import in Editor (Console clear) if batch CI is unavailable.
+
+- 2026-04-10 | T-003 | `Assets/Civilizator/Simulation/Civilizator.Simulation.asmdef` (`noEngineReferences: true`), stub `SimulationAssemblyMarker.cs` + `.meta` GUIDs. Verified: `Unity -batchmode -quit` on rsync copy without `Library` (exit 0); Bee log shows `Civilizator.Simulation.dll` compiled. Main tree locked if Editor has project open (batchmode on same path fails)
 
