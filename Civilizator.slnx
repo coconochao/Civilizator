@@ -1,0 +1,9 @@
+﻿<Solution>
+  <Project Path="Civilizator.Simulation.Tests.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Civilizator.Simulation.csproj" />
+  <Project Path="Civilizator.Presentation.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Civilizator.UI.csproj" />
+  <Project Path="Civilizator.Input.csproj" />
+</Solution>
