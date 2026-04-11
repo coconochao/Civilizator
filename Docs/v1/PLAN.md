@@ -79,9 +79,9 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase E — Central building & storage
 
-- [ ] **T-040** — Central storage: four integer stocks
-- [ ] **T-041** — Deposit on arrival (instant) API
-- [ ] **T-042** — Withdraw for construction (bounded by carry + remaining progress)
+- [x] **T-040** — Central storage: four integer stocks
+- [x] **T-041** — Deposit on arrival (instant) API
+- [x] **T-042** — Withdraw for construction (bounded by carry + remaining progress)
 
 ### Phase F — Buildings & construction state
 
