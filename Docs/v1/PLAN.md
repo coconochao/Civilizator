@@ -66,7 +66,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase C — Simulation clock
 
-- [ ] **T-020** — `SimulationClock`: cycles (1 cycle = 1 min sim) + accumulated seconds
+- [x] **T-020** — `SimulationClock`: cycles (1 cycle = 1 min sim) + accumulated seconds
 - [ ] **T-021** — Clock advances from presentation with delta time (not frame-tied logic bugs)
 - [ ] **T-022** — Helpers: “seconds per cycle”, schedule events on second boundaries
 
@@ -920,4 +920,6 @@ Format: `YYYY-MM-DD | T-xxx | note`
 - 2026-04-11 | T-018 | Implemented `WorldGenerator` (static utility class) with `GenerateNodes(int seed)` method. Divides 100×100 map into 10×10 regions (10 tiles per region). For each region: places exactly one node of each type (Tree, Plant, Animal, Ore) in random, unused tiles via seeded RNG. Returns 400 nodes total (10×10 regions × 4 types). Deterministic: same seed = same positions & types. Added comprehensive tests in `WorldGeneratorTests.cs`: 400-node count, no tile collisions, 4 types per region, determinism, in-bounds validation, initial amount. Files: `WorldGenerator.cs`, `WorldGeneratorTests.cs`.
 
 - 2026-04-11 | T-019 | Verified comprehensive NUnit test suite in `WorldGeneratorTests.cs` (8 test methods) validates all invariants: 400 nodes total, 4 types per 10×10 region, no position collisions, deterministic generation, different seeds produce different results, all nodes in-bounds, InitialAmount = 100, exactly 4 nodes per region. All tests use seeded RNG; no external dependencies. Tests satisfy SPEC.md node placement requirements (10×10 regions, 1 node per type per region, no duplicates). No changes needed—implementation and validation complete.
+
+- 2026-04-11 | T-020 | Implemented `SimulationClock` class (public `CurrentCycle` and `AccumulatedSeconds` properties; `const float SecondsPerCycle = 60`; `Advance(float deltaTime)` increments cycles while accumulator ≥ 60; `Reset()` clears state; `TotalSimulationSeconds` property). Added comprehensive test suite `SimulationClockTests.cs` (9 NUnit tests: initialization, within-cycle accumulation, exact cycle boundary, multiple cycles, remainders, multi-step advancement, negative delta handling, total seconds calculation, reset). Verified: 60 sim seconds = 1 cycle increment, fractional accumulation preserved across advances. Files: `SimulationClock.cs`, `SimulationClockTests.cs`.
 
