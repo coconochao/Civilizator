@@ -68,7 +68,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 - [x] **T-020** — `SimulationClock`: cycles (1 cycle = 1 min sim) + accumulated seconds
 - [x] **T-021** — Clock advances from presentation with delta time (not frame-tied logic bugs)
-- [ ] **T-022** — Helpers: “seconds per cycle”, schedule events on second boundaries
+- [x] **T-022** — Helpers: “seconds per cycle”, schedule events on second boundaries
 
 ### Phase D — Pathfinding
 

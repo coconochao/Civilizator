@@ -53,5 +53,28 @@ namespace Civilizator.Simulation
         /// Get the total simulation time elapsed (in seconds).
         /// </summary>
         public float TotalSimulationSeconds => CurrentCycle * SecondsPerCycle + AccumulatedSeconds;
+
+        /// <summary>
+        /// Returns the simulation time at which an action starting now and lasting for a given duration will complete.
+        /// Duration is rounded up to the next second boundary.
+        /// </summary>
+        /// <param name="durationSeconds">Action duration in seconds (fractional allowed).</param>
+        /// <returns>Absolute simulation time when action completes.</returns>
+        public float GetActionEndTime(float durationSeconds)
+        {
+            float startTime = TotalSimulationSeconds;
+            float endTime = startTime + durationSeconds;
+            return endTime;
+        }
+
+        /// <summary>
+        /// Check if an action scheduled to end at a specific simulation time has completed.
+        /// </summary>
+        /// <param name="endTime">Absolute simulation time when action should end.</param>
+        /// <returns>True if current time >= endTime.</returns>
+        public bool IsActionComplete(float endTime)
+        {
+            return TotalSimulationSeconds >= endTime;
+        }
     }
 }

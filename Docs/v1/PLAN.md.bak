@@ -67,7 +67,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 ### Phase C — Simulation clock
 
 - [x] **T-020** — `SimulationClock`: cycles (1 cycle = 1 min sim) + accumulated seconds
-- [ ] **T-021** — Clock advances from presentation with delta time (not frame-tied logic bugs)
+- [x] **T-021** — Clock advances from presentation with delta time (not frame-tied logic bugs)
 - [ ] **T-022** — Helpers: “seconds per cycle”, schedule events on second boundaries
 
 ### Phase D — Pathfinding
@@ -923,3 +923,5 @@ Format: `YYYY-MM-DD | T-xxx | note`
 
 - 2026-04-11 | T-020 | Implemented `SimulationClock` class (public `CurrentCycle` and `AccumulatedSeconds` properties; `const float SecondsPerCycle = 60`; `Advance(float deltaTime)` increments cycles while accumulator ≥ 60; `Reset()` clears state; `TotalSimulationSeconds` property). Added comprehensive test suite `SimulationClockTests.cs` (9 NUnit tests: initialization, within-cycle accumulation, exact cycle boundary, multiple cycles, remainders, multi-step advancement, negative delta handling, total seconds calculation, reset). Verified: 60 sim seconds = 1 cycle increment, fractional accumulation preserved across advances. Files: `SimulationClock.cs`, `SimulationClockTests.cs`.
 
+
+ same cycles/remainder), large timestep correctness. Created `Civilizator.Presentation.Tests.asmdef` for test assembly. Verification: tests pass; simulation independent of FPS and timeScale. Files: `SimulationTickDriver.cs`, `SimulationTickDriverTests.cs`, `Civilizator.Presentation.Tests.asmdef`.
