@@ -6,4 +6,5 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Civilizator.UI.csproj" />
   <Project Path="Civilizator.Input.csproj" />
+  <Project Path="Civilizator.Presentation.Tests.csproj" />
 </Solution>

@@ -75,7 +75,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-030** — Grid occupancy model (multi-unit same tile allowed)
 - [x] **T-031** — 4-way BFS or A* from A to B on passable tiles
 - [x] **T-032** — Nearest tile queries using Manhattan for “nearest” heuristics
-- [ ] **T-033** — Pathfinding unit test or deterministic scenario
+- [x] **T-033** — Pathfinding unit test or deterministic scenario
 
 ### Phase E — Central building & storage
 
@@ -929,3 +929,5 @@ Format: `YYYY-MM-DD | T-xxx | note`
 - 2026-04-11 | T-030 | Implemented `GridOccupancy` class with efficient bool array occupancy tracking (O(1) space/time lookup). Buildings block footprint tiles; agents don't block each other (multi-occupancy per spec). Public API: `IsPassable(GridPos)`, `BlockTile/UnblockTile`, `BlockBuilding/UnblockBuilding`, `Clear()`. Added 9 comprehensive NUnit tests in `GridOccupancyTests.cs`: passability initialization, single/multiple tile blocking, building footprint blocking, unblocking, state reset, out-of-bounds handling, multiple coexisting buildings. Files: `GridOccupancy.cs`, `GridOccupancyTests.cs`.
 
 - 2026-04-11 | T-031 | Implemented 4-way BFS pathfinder `Pathfinding.cs` with static `FindPath(GridPos start, GridPos target, GridOccupancy occupancy)` method. Explores N/E/S/W directions; returns complete path or empty list if unreachable. Handles edge cases: start=target returns single-tile path; blocked start/target returns empty; uses Queue-based BFS for O(width×height) time. Added 9 comprehensive NUnit tests in `PathfindingTests.cs`: direct/diagonal paths, obstacle routing, blocked positions, no-path scenarios, complex mazes, bounds respect. Verified: test suite covers all major pathfinding cases. Files: `Pathfinding.cs`, `PathfindingTests.cs` + .meta files.
+
+- 2026-04-11 | T-033 | Added regression test `FindPath_ComplexMazeRegression_ValidatesFixedBehavior()` to `PathfindingTests.cs`. Test validates pathfinding on 20×15 grid with complex maze: vertical wall at x=5 (except y=5), horizontal wall at y=5 (x=9–15), vertical wall at x=7 (y=10–14). Path from (1,1) to (18,13) expected = 29 tiles. Validates: correct path length, start/end positions, no blocked tiles in path. Added JSON fixture `PathfindingRegressionFixture.json` documenting the scenario. Fixed compilation errors in `GridOccupancyTests.cs` (changed `BuildingKind.CentralBuilding` → `BuildingKind.Central`) and meta file YAML issues. Changed `autoReferenced` to true in `Civilizator.Simulation.Tests.asmdef`. Files: `PathfindingTests.cs`, `PathfindingRegressionFixture.json`, `GridOccupancyTests.cs`, `.asmdef`.

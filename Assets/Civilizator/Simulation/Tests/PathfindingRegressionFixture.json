@@ -1,0 +1,18 @@
+{
+  "testName": "ComplexMazePathfinding",
+  "description": "Regression test: pathfinding through a complex maze with multiple turns and dead-ends",
+  "gridWidth": 20,
+  "gridHeight": 15,
+  "blockedTiles": [
+    {"x": 5, "y": 0}, {"x": 5, "y": 1}, {"x": 5, "y": 2}, {"x": 5, "y": 3},
+    {"x": 5, "y": 4}, {"x": 5, "y": 6}, {"x": 5, "y": 7}, {"x": 5, "y": 8},
+    {"x": 5, "y": 9}, {"x": 5, "y": 10}, {"x": 5, "y": 11}, {"x": 5, "y": 12},
+    {"x": 10, "y": 5}, {"x": 11, "y": 5}, {"x": 12, "y": 5}, {"x": 13, "y": 5},
+    {"x": 14, "y": 5}, {"x": 15, "y": 5}, {"x": 9, "y": 5},
+    {"x": 7, "y": 10}, {"x": 7, "y": 11}, {"x": 7, "y": 12}, {"x": 7, "y": 13}, {"x": 7, "y": 14}
+  ],
+  "startPos": {"x": 1, "y": 1},
+  "targetPos": {"x": 18, "y": 13},
+  "expectedPathLength": 29,
+  "explanation": "Path navigates around vertical wall at x=5 (except y=5), horizontal wall at y=5 (x=9-15), and vertical wall at x=7 (y=10-14)"
+}

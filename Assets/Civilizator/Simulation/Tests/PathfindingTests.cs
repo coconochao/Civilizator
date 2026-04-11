@@ -281,5 +281,66 @@ namespace Civilizator.Simulation.Tests
             Assert.IsNotNull(nearest);
             Assert.AreEqual(start, nearest.Value, "At minimum should find start position itself");
         }
+
+        [Test]
+        public void FindPath_ComplexMazeRegression_ValidatesFixedBehavior()
+        {
+            // Regression test using complex maze fixture
+            // Verifies pathfinding behavior remains consistent across versions
+            // Grid: 20x15 with walls creating maze pattern
+            // Start: (1,1), Target: (18,13), Expected path length: 29
+
+            var occupancy20x15 = new GridOccupancy(20, 15);
+
+            // Block vertical wall at x=5 (except at y=5 passage)
+            for (int y = 0; y < 15; y++)
+            {
+                if (y != 5) // Leave opening at y=5
+                {
+                    occupancy20x15.BlockTile(new GridPos(5, y));
+                }
+            }
+
+            // Block horizontal wall at y=5 (x=9-15, except passage at x=8)
+            for (int x = 9; x < 16; x++)
+            {
+                occupancy20x15.BlockTile(new GridPos(x, 5));
+            }
+
+            // Block vertical wall at x=7 (y=10-14)
+            for (int y = 10; y < 15; y++)
+            {
+                occupancy20x15.BlockTile(new GridPos(7, y));
+            }
+
+            var start = new GridPos(1, 1);
+            var target = new GridPos(18, 13);
+
+            var path = Pathfinding.FindPath(start, target, occupancy20x15);
+
+            Assert.AreEqual(29, path.Count, "Regression: maze path should have exactly 29 tiles");
+            Assert.AreEqual(start, path[0], "Path should start at (1,1)");
+            Assert.AreEqual(target, path[path.Count - 1], "Path should end at (18,13)");
+
+            // Verify no blocked tiles are in the path
+            var blockedSet = new HashSet<GridPos>();
+            for (int y = 0; y < 15; y++)
+            {
+                if (y != 5) blockedSet.Add(new GridPos(5, y));
+            }
+            for (int x = 9; x < 16; x++)
+            {
+                blockedSet.Add(new GridPos(x, 5));
+            }
+            for (int y = 10; y < 15; y++)
+            {
+                blockedSet.Add(new GridPos(7, y));
+            }
+
+            foreach (var tile in path)
+            {
+                Assert.IsFalse(blockedSet.Contains(tile), $"Path should not contain blocked tile {tile}");
+            }
+        }
     }
 }

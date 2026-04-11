@@ -44,7 +44,7 @@ namespace Civilizator.Simulation.Tests
         [Test]
         public void BlockBuilding_BlocksAllFootprintTiles()
         {
-            var building = new Building(BuildingKind.CentralBuilding, new GridPos(5, 5));
+            var building = new Building(BuildingKind.Central, new GridPos(5, 5));
             occupancy.BlockBuilding(building);
 
             var occupiedTiles = new List<GridPos>();
@@ -59,7 +59,7 @@ namespace Civilizator.Simulation.Tests
         [Test]
         public void BlockBuilding_DoesNotBlockAdjacentTiles()
         {
-            var building = new Building(BuildingKind.CentralBuilding, new GridPos(5, 5));
+            var building = new Building(BuildingKind.Central, new GridPos(5, 5));
             occupancy.BlockBuilding(building);
 
             Assert.IsTrue(occupancy.IsPassable(new GridPos(5, 3)));
@@ -71,7 +71,7 @@ namespace Civilizator.Simulation.Tests
         [Test]
         public void UnblockBuilding_UnblocksAllFootprintTiles()
         {
-            var building = new Building(BuildingKind.CentralBuilding, new GridPos(5, 5));
+            var building = new Building(BuildingKind.Central, new GridPos(5, 5));
             occupancy.BlockBuilding(building);
             occupancy.UnblockBuilding(building);
 
@@ -114,7 +114,7 @@ namespace Civilizator.Simulation.Tests
         [Test]
         public void MultipleBuildings_BlockTheirRespectiveFootprints()
         {
-            var building1 = new Building(BuildingKind.CentralBuilding, new GridPos(5, 5));
+            var building1 = new Building(BuildingKind.Central, new GridPos(5, 5));
             var building2 = new Building(BuildingKind.Tower, new GridPos(15, 15));
 
             occupancy.BlockBuilding(building1);
