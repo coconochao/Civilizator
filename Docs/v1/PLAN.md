@@ -895,42 +895,42 @@ Each task: **Spec reference**, **Do**, **Verification**.
 
 ---
 
-## How to run tests
+## Running tests (for AI agents)
 
-This project contains NUnit test suites organized in two test assemblies:
-- `Civilizator.Simulation.Tests` (location: `Assets/Civilizator/Simulation/Tests/`) — simulation logic tests
-- `Civilizator.Presentation.Tests` (location: `Assets/Civilizator/Presentation/Tests/`) — presentation driver tests
+**You cannot run tests autonomously.** When a task's **Verification** step requires tests to pass, you must **ask the user to run them and report results**.
 
-### Running tests via the Unity Editor GUI (recommended)
+### When to request test runs
 
-1. **Open the project in Unity Editor** (version 6000.4.1f1)
-2. **Open the Test Runner window**: `Window → Testing → Test Runner`
-3. **Click "EditMode"** tab to view all edit-mode tests
-4. **Run all tests**: Click the green play icon in the Test Runner window, or run individual tests by clicking their play icons
-5. **View results**: Passed tests show green checkmarks; failed tests show red X and error messages
+- After implementing new code with test files
+- Before marking a task done (if verification includes "tests pass")
+- After fixing compilation errors
 
-Tests will be discovered automatically when the test assemblies compile. If tests don't appear in the Test Runner, try:
-- Recompiling scripts: `Assets → Reimport All`
-- Reloading the project: Close and re-open the Test Runner window
+### Instructions to give the user
 
-### Running tests via command line (headless)
+```
+Please run the tests and tell me if they pass:
 
-Command-line test execution is **not currently working** in this project (Unity 6000.4.1f1 has a test discovery issue in headless mode). Use the Unity Editor GUI instead.
+1. Open Unity Editor (6000.4.1f1)
+2. Go to: Window → Testing → Test Runner
+3. Click the "EditMode" tab
+4. Click the green play icon to run all tests
+5. Tell me if all tests show green checkmarks
 
-If you need CI/CD integration for tests, open the Unity Editor once to verify tests pass, then implement a CI step using the Editor GUI approach (requires a display or Virtual Display).
+If tests don't appear, try: Assets → Reimport All, then reload the Test Runner window.
+```
 
-### Test coverage
+### Test coverage by module
 
-Current test suites validate:
-- **Grid & positioning**: `GridPosTests.cs` — Manhattan distance, bounds checking
-- **Building placement**: `BuildingPlacementTests.cs` — overlap rules, gap validation, resource facility node matching
-- **World generation**: `WorldGeneratorTests.cs` — region distribution, deterministic seeding, collision detection
-- **Simulation clock**: `SimulationClockTests.cs` — cycle advancement, frame-rate independence
-- **Pathfinding**: `PathfindingTests.cs` — 4-way BFS, obstacle avoidance, regression scenarios
-- **Grid occupancy**: `GridOccupancyTests.cs` — tile passability, building footprints
-- **Presentation**: `SimulationTickDriverTests.cs` — driver loop timing and state management
+If the user reports test failures, they indicate:
+- **GridPosTests**: Problem with position/Manhattan distance logic
+- **BuildingPlacementTests**: Issue with overlap/gap rules or resource facility validation
+- **WorldGeneratorTests**: World generation seeding or region distribution broken
+- **SimulationClockTests**: Cycle advancement or delta time handling broken
+- **PathfindingTests**: BFS pathfinder or occupancy blocking issue
+- **GridOccupancyTests**: Tile passability or building footprint tracking broken
+- **SimulationTickDriverTests**: Presentation driver timing issue
 
-All tests use NUnit 3.x framework and can be run in EditMode (no play mode tests at this stage).
+All tests run in EditMode only (no play mode tests yet).
 
 ---
 
