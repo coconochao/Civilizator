@@ -72,7 +72,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase D — Pathfinding
 
-- [ ] **T-030** — Grid occupancy model (multi-unit same tile allowed)
+- [x] **T-030** — Grid occupancy model (multi-unit same tile allowed)
 - [ ] **T-031** — 4-way BFS or A* from A to B on passable tiles
 - [ ] **T-032** — Nearest tile queries using Manhattan for “nearest” heuristics
 - [ ] **T-033** — Pathfinding unit test or deterministic scenario
@@ -925,3 +925,5 @@ Format: `YYYY-MM-DD | T-xxx | note`
 
 
  same cycles/remainder), large timestep correctness. Created `Civilizator.Presentation.Tests.asmdef` for test assembly. Verification: tests pass; simulation independent of FPS and timeScale. Files: `SimulationTickDriver.cs`, `SimulationTickDriverTests.cs`, `Civilizator.Presentation.Tests.asmdef`.
+
+- 2026-04-11 | T-030 | Implemented `GridOccupancy` class with efficient bool array occupancy tracking (O(1) space/time lookup). Buildings block footprint tiles; agents don't block each other (multi-occupancy per spec). Public API: `IsPassable(GridPos)`, `BlockTile/UnblockTile`, `BlockBuilding/UnblockBuilding`, `Clear()`. Added 9 comprehensive NUnit tests in `GridOccupancyTests.cs`: passability initialization, single/multiple tile blocking, building footprint blocking, unblocking, state reset, out-of-bounds handling, multiple coexisting buildings. Files: `GridOccupancy.cs`, `GridOccupancyTests.cs`.
