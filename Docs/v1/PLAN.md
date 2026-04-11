@@ -59,7 +59,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-013** — Resource kind enum (Logs, Ore, Meat, PlantFood)
 - [x] **T-014** — Building kind enum + footprint sizes (3×3 central, 2×2 others)
 - [x] **T-015** — Building placement rules: no overlap, 1 tile gap
-- [ ] **T-016** — Resource facility placement: overlap matching natural node
+- [x] **T-016** — Resource facility placement: overlap matching natural node
 - [ ] **T-017** — House placement: nearest empty tile to central building
 - [ ] **T-018** — World generator: 10×10 regions, one node per type per region
 - [ ] **T-019** — World generator tests or deterministic seed smoke check
@@ -914,4 +914,6 @@ Format: `YYYY-MM-DD | T-xxx | note`
 - 2026-04-10 | T-005 | `Assets/Civilizator/UI/Civilizator.UI.asmdef` references `Civilizator.Presentation`, `UnityEngine.UI`, `Unity.InputSystem`; stub `UIAssemblyMarker.cs` (uGUI `Button`, `InputSystemUIInputModule`, `PresentationAssemblyMarker`). Verified: `Unity -batchmode -nographics -quit` exit 0; `Library/ScriptAssemblies/Civilizator.UI.dll` produced.
 
 - 2026-04-10 | T-006 | `Assets/Civilizator/Input/Civilizator.Input.asmdef` references `Unity.InputSystem`; placeholder `CivilizatorInput.inputactions` (Camera map: Pan, Zoom stubs); `InputAssemblyMarker.cs` (`InputActionAsset` field). Removed `Input/.gitkeep`. Verified: `Unity -batchmode -nographics -quit` exit 0; Bee/CSC produced `Library/ScriptAssemblies/Civilizator.Input.dll`.
+
+- 2026-04-11 | T-016 | Added `BuildingKindHelpers.GetRequiredNodeType()` and `IsResourceFacility()` to map resource facilities → node types. Extended `BuildingPlacementValidator.CanPlaceBuilding()` signature with optional `naturalNodes` parameter; added `HasMatchingNodeOverlap()` validation. Added 11 comprehensive NUnit tests (resource facility node matching: Plantation↔Tree, Farm↔Plant, CattleFarm↔Animal, Quarry↔Ore; overlap boundary conditions; null/empty nodes). Backward compatible: non-resource buildings (House, Tower, Central) ignore nodes; existing tests pass unchanged. Files: `BuildingKind.cs`, `BuildingPlacement.cs`, `BuildingPlacementTests.cs`.
 

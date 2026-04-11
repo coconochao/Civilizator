@@ -119,5 +119,161 @@ namespace Civilizator.Simulation.Tests
             bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(buildings, BuildingKind.House, new GridPos(13, 13));
             Assert.IsTrue(canPlace);
         }
+
+        // ===== Resource Facility Placement Tests =====
+
+        [Test]
+        public void CanPlaceBuilding_ResourceFacilityWithoutNodes_ShouldFail()
+        {
+            // Attempting to place a Plantation without providing natural nodes should fail
+            var emptyNodes = new List<NaturalNode>();
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Plantation, new GridPos(10, 10), emptyNodes);
+            Assert.IsFalse(canPlace, "Should not allow resource facility without matching node");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_PlantationOverlapsTreeNode_ShouldSucceed()
+        {
+            // Create a Tree node at (10, 10)
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Tree, new GridPos(10, 10))
+            };
+
+            // Place Plantation with anchor (10, 10) - footprint 2x2, overlaps the node
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Plantation, new GridPos(10, 10), nodes);
+            Assert.IsTrue(canPlace, "Plantation should succeed when overlapping matching Tree node");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_PlantationNodesWrongType_ShouldFail()
+        {
+            // Create an Ore node (not a Tree)
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Ore, new GridPos(10, 10))
+            };
+
+            // Try to place Plantation over the Ore node
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Plantation, new GridPos(10, 10), nodes);
+            Assert.IsFalse(canPlace, "Plantation should fail when overlapping non-Tree node");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_FarmOverlapsPlanNode_ShouldSucceed()
+        {
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Plant, new GridPos(11, 11))
+            };
+
+            // Anchor at (10, 10), footprint 2x2 covers (10,10), (10,11), (11,10), (11,11)
+            // The Plant node at (11, 11) is within this footprint
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Farm, new GridPos(10, 10), nodes);
+            Assert.IsTrue(canPlace, "Farm should succeed when overlapping matching Plant node");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_CattleFarmOverlapsAnimalNode_ShouldSucceed()
+        {
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Animal, new GridPos(20, 20))
+            };
+
+            // Anchor at (19, 19), footprint 2x2 covers (19,19) to (20,20)
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.CattleFarm, new GridPos(19, 19), nodes);
+            Assert.IsTrue(canPlace, "CattleFarm should succeed when overlapping matching Animal node");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_QuarryOverlapsOreNode_ShouldSucceed()
+        {
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Ore, new GridPos(30, 30))
+            };
+
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Quarry, new GridPos(30, 30), nodes);
+            Assert.IsTrue(canPlace, "Quarry should succeed when overlapping matching Ore node");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_ResourceFacilityNodeOutsideFootprint_ShouldFail()
+        {
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Tree, new GridPos(15, 15))
+            };
+
+            // Anchor at (10, 10), footprint 2x2 covers (10,10) to (11,11)
+            // Node at (15, 15) is outside this footprint
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Plantation, new GridPos(10, 10), nodes);
+            Assert.IsFalse(canPlace, "Plantation should fail when no node overlaps its footprint");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_ResourceFacilityMultipleNodes_AtLeastOneMatches_ShouldSucceed()
+        {
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Ore, new GridPos(10, 10)),
+                new NaturalNode(NaturalNodeType.Plant, new GridPos(11, 11)),
+                new NaturalNode(NaturalNodeType.Tree, new GridPos(10, 11))
+            };
+
+            // Anchor at (10, 10), footprint 2x2
+            // Ore node at (10, 10) overlaps - but we're placing a Farm
+            // Plant node at (11, 11) overlaps - this matches!
+            // Tree node at (10, 11) overlaps - doesn't match
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Farm, new GridPos(10, 10), nodes);
+            Assert.IsTrue(canPlace, "Farm should succeed when at least one matching Plant node overlaps");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_NonResourceFacilityIgnoresNodes()
+        {
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Tree, new GridPos(10, 10))
+            };
+
+            // House placement should not care about matching nodes
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.House, new GridPos(10, 10), nodes);
+            Assert.IsTrue(canPlace, "Non-resource buildings should not require matching nodes");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_ResourceFacilityOnNodeBoundary_ShouldSucceed()
+        {
+            var nodes = new List<NaturalNode>
+            {
+                new NaturalNode(NaturalNodeType.Ore, new GridPos(11, 11))
+            };
+
+            // Anchor at (10, 10), footprint 2x2 covers (10,10), (10,11), (11,10), (11,11)
+            // Node at (11, 11) is at the boundary of the footprint - should overlap
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Quarry, new GridPos(10, 10), nodes);
+            Assert.IsTrue(canPlace, "Resource facility should succeed when node is on footprint boundary");
+        }
+
+        [Test]
+        public void CanPlaceBuilding_ResourceFacilityNullNodesList_ShouldFail()
+        {
+            // Placing a resource facility with null nodes list should fail
+            bool canPlace = BuildingPlacementValidator.CanPlaceBuilding(
+                buildings, BuildingKind.Plantation, new GridPos(10, 10), null);
+            Assert.IsFalse(canPlace, "Resource facility with null nodes list should fail");
+        }
     }
 }

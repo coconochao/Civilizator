@@ -38,5 +38,29 @@ namespace Civilizator.Simulation
                 _ => throw new System.ArgumentException($"Unknown building kind: {kind}")
             };
         }
+
+        /// <summary>
+        /// Returns the required natural node type for a resource facility.
+        /// Returns null if the building is not a resource facility.
+        /// </summary>
+        public static NaturalNodeType? GetRequiredNodeType(BuildingKind kind)
+        {
+            return kind switch
+            {
+                BuildingKind.Plantation => NaturalNodeType.Tree,
+                BuildingKind.Farm => NaturalNodeType.Plant,
+                BuildingKind.CattleFarm => NaturalNodeType.Animal,
+                BuildingKind.Quarry => NaturalNodeType.Ore,
+                _ => null
+            };
+        }
+
+        /// <summary>
+        /// Returns true if this building kind is a resource facility (requires matching natural node).
+        /// </summary>
+        public static bool IsResourceFacility(BuildingKind kind)
+        {
+            return GetRequiredNodeType(kind).HasValue;
+        }
     }
 }

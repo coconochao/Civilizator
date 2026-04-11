@@ -59,8 +59,13 @@ namespace Civilizator.Simulation
         /// - Footprint must not extend outside the map.
         /// - Must not overlap with any existing building.
         /// - Must have at least 1 tile gap from other buildings (Chebyshev distance).
+        /// - Resource facilities must overlap at least one tile with a matching natural node.
         /// </summary>
-        public static bool CanPlaceBuilding(System.Collections.Generic.IEnumerable<Building> buildings, BuildingKind kind, GridPos anchor)
+        public static bool CanPlaceBuilding(
+            System.Collections.Generic.IEnumerable<Building> buildings,
+            BuildingKind kind,
+            GridPos anchor,
+            System.Collections.Generic.IEnumerable<NaturalNode> naturalNodes = null)
         {
             int footprintSize = BuildingKindHelpers.GetFootprintSize(kind);
 
@@ -75,7 +80,43 @@ namespace Civilizator.Simulation
                     return false;
             }
 
+            // Check resource facility node matching if applicable
+            if (BuildingKindHelpers.IsResourceFacility(kind))
+            {
+                if (naturalNodes == null)
+                    return false; // Cannot place resource facility without checking nodes
+
+                var requiredNodeType = BuildingKindHelpers.GetRequiredNodeType(kind).Value;
+                if (!HasMatchingNodeOverlap(anchor, footprintSize, naturalNodes, requiredNodeType))
+                    return false;
+            }
+
             return true;
+        }
+
+        /// <summary>
+        /// Check if a building footprint overlaps with at least one natural node of the required type.
+        /// </summary>
+        private static bool HasMatchingNodeOverlap(
+            GridPos anchor,
+            int footprintSize,
+            System.Collections.Generic.IEnumerable<NaturalNode> naturalNodes,
+            NaturalNodeType requiredType)
+        {
+            foreach (var node in naturalNodes)
+            {
+                if (node.Type != requiredType)
+                    continue;
+
+                // Check if the node position is within the building's footprint
+                if (node.Position.X >= anchor.X && node.Position.X < anchor.X + footprintSize &&
+                    node.Position.Y >= anchor.Y && node.Position.Y < anchor.Y + footprintSize)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
