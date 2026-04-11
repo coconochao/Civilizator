@@ -113,4 +113,47 @@ namespace Civilizator.Simulation.Tests
             Assert.AreEqual(100, NaturalNode.InitialAmount);
         }
     }
+
+    [TestFixture]
+    public class WorldGeneratorQuickTests
+    {
+        [Test]
+        public void GenerateNodes_Returns400Nodes()
+        {
+            var nodes = WorldGenerator.GenerateNodes(42);
+            Assert.AreEqual(400, nodes.Count);
+        }
+
+        [Test]
+        public void GenerateNodes_NoTileCollisions()
+        {
+            var nodes = WorldGenerator.GenerateNodes(42);
+            var positions = new System.Collections.Generic.HashSet<GridPos>();
+
+            foreach (var node in nodes)
+            {
+                Assert.IsFalse(positions.Contains(node.Position), 
+                    $"Duplicate position found: {node.Position}");
+                positions.Add(node.Position);
+            }
+
+            Assert.AreEqual(400, positions.Count);
+        }
+
+        [Test]
+        public void GenerateNodes_DeterministicWithSameSeed()
+        {
+            var nodes1 = WorldGenerator.GenerateNodes(123);
+            var nodes2 = WorldGenerator.GenerateNodes(123);
+
+            Assert.AreEqual(400, nodes1.Count);
+            Assert.AreEqual(400, nodes2.Count);
+
+            for (int i = 0; i < nodes1.Count; i++)
+            {
+                Assert.AreEqual(nodes1[i].Type, nodes2[i].Type);
+                Assert.AreEqual(nodes1[i].Position, nodes2[i].Position);
+            }
+        }
+    }
 }

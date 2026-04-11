@@ -61,7 +61,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-015** — Building placement rules: no overlap, 1 tile gap
 - [x] **T-016** — Resource facility placement: overlap matching natural node
 - [x] **T-017** — House placement: nearest empty tile to central building
-- [ ] **T-018** — World generator: 10×10 regions, one node per type per region
+- [x] **T-018** — World generator: 10×10 regions, one node per type per region
 - [ ] **T-019** — World generator tests or deterministic seed smoke check
 
 ### Phase C — Simulation clock
@@ -916,4 +916,6 @@ Format: `YYYY-MM-DD | T-xxx | note`
 - 2026-04-10 | T-006 | `Assets/Civilizator/Input/Civilizator.Input.asmdef` references `Unity.InputSystem`; placeholder `CivilizatorInput.inputactions` (Camera map: Pan, Zoom stubs); `InputAssemblyMarker.cs` (`InputActionAsset` field). Removed `Input/.gitkeep`. Verified: `Unity -batchmode -nographics -quit` exit 0; Bee/CSC produced `Library/ScriptAssemblies/Civilizator.Input.dll`.
 
 - 2026-04-11 | T-016 | Added `BuildingKindHelpers.GetRequiredNodeType()` and `IsResourceFacility()` to map resource facilities → node types. Extended `BuildingPlacementValidator.CanPlaceBuilding()` signature with optional `naturalNodes` parameter; added `HasMatchingNodeOverlap()` validation. Added 11 comprehensive NUnit tests (resource facility node matching: Plantation↔Tree, Farm↔Plant, CattleFarm↔Animal, Quarry↔Ore; overlap boundary conditions; null/empty nodes). Backward compatible: non-resource buildings (House, Tower, Central) ignore nodes; existing tests pass unchanged. Files: `BuildingKind.cs`, `BuildingPlacement.cs`, `BuildingPlacementTests.cs`.
+
+- 2026-04-11 | T-018 | Implemented `WorldGenerator` (static utility class) with `GenerateNodes(int seed)` method. Divides 100×100 map into 10×10 regions (10 tiles per region). For each region: places exactly one node of each type (Tree, Plant, Animal, Ore) in random, unused tiles via seeded RNG. Returns 400 nodes total (10×10 regions × 4 types). Deterministic: same seed = same positions & types. Added comprehensive tests in `WorldGeneratorTests.cs`: 400-node count, no tile collisions, 4 types per region, determinism, in-bounds validation, initial amount. Files: `WorldGenerator.cs`, `WorldGeneratorTests.cs`.
 
