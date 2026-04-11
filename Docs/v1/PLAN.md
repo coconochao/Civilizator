@@ -58,7 +58,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-012** — Natural node model (type + remaining amount, starts at 100)
 - [x] **T-013** — Resource kind enum (Logs, Ore, Meat, PlantFood)
 - [x] **T-014** — Building kind enum + footprint sizes (3×3 central, 2×2 others)
-- [ ] **T-015** — Building placement rules: no overlap, 1 tile gap
+- [x] **T-015** — Building placement rules: no overlap, 1 tile gap
 - [ ] **T-016** — Resource facility placement: overlap matching natural node
 - [ ] **T-017** — House placement: nearest empty tile to central building
 - [ ] **T-018** — World generator: 10×10 regions, one node per type per region

@@ -1,0 +1,136 @@
+namespace Civilizator.Simulation
+{
+    /// <summary>
+    /// Represents a building instance in the world.
+    /// A building occupies a footprint starting at an anchor position.
+    /// </summary>
+    public class Building
+    {
+        public BuildingKind Kind { get; }
+        public GridPos Anchor { get; }
+
+        public Building(BuildingKind kind, GridPos anchor)
+        {
+            Kind = kind;
+            Anchor = anchor;
+        }
+
+        /// <summary>
+        /// Get the footprint size (width and height) for this building.
+        /// </summary>
+        public int GetFootprintSize() => BuildingKindHelpers.GetFootprintSize(Kind);
+
+        /// <summary>
+        /// Check if a given tile is occupied by this building's footprint.
+        /// The building occupies tiles from anchor to anchor + footprint size.
+        /// </summary>
+        public bool OccupiesTile(GridPos tile)
+        {
+            int size = GetFootprintSize();
+            return tile.X >= Anchor.X && tile.X < Anchor.X + size &&
+                   tile.Y >= Anchor.Y && tile.Y < Anchor.Y + size;
+        }
+
+        /// <summary>
+        /// Get all tiles occupied by this building.
+        /// </summary>
+        public void GetOccupiedTiles(System.Collections.Generic.List<GridPos> result)
+        {
+            result.Clear();
+            int size = GetFootprintSize();
+            for (int x = Anchor.X; x < Anchor.X + size && x < GridPos.MapWidth; x++)
+            {
+                for (int y = Anchor.Y; y < Anchor.Y + size && y < GridPos.MapHeight; y++)
+                {
+                    result.Add(new GridPos(x, y));
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Validates building placement according to the build rules.
+    /// </summary>
+    public static class BuildingPlacementValidator
+    {
+        /// <summary>
+        /// Check if a building can be placed at the given anchor position.
+        /// Rules:
+        /// - Footprint must not extend outside the map.
+        /// - Must not overlap with any existing building.
+        /// - Must have at least 1 tile gap from other buildings (Chebyshev distance).
+        /// </summary>
+        public static bool CanPlaceBuilding(System.Collections.Generic.IEnumerable<Building> buildings, BuildingKind kind, GridPos anchor)
+        {
+            int footprintSize = BuildingKindHelpers.GetFootprintSize(kind);
+
+            // Check if footprint extends outside the map
+            if (anchor.X + footprintSize > GridPos.MapWidth || anchor.Y + footprintSize > GridPos.MapHeight)
+                return false;
+
+            // Check for overlap and 1 tile gap from existing buildings
+            foreach (var existing in buildings)
+            {
+                if (BuildingsOverlapOrTooClose(anchor, footprintSize, existing.Anchor, existing.GetFootprintSize()))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check if two building footprints overlap or are too close (less than 1 tile gap).
+        /// A 1 tile gap means the Chebyshev distance between the closest tiles must be >= 2.
+        /// </summary>
+        private static bool BuildingsOverlapOrTooClose(GridPos anchor1, int size1, GridPos anchor2, int size2)
+        {
+            // Footprints occupy tiles [anchor.X, anchor.X + size), [anchor.Y, anchor.Y + size)
+            // In inclusive coordinates: [anchor.X, anchor.X + size - 1]
+
+            int b1MinX = anchor1.X;
+            int b1MaxX = anchor1.X + size1 - 1;
+            int b1MinY = anchor1.Y;
+            int b1MaxY = anchor1.Y + size1 - 1;
+
+            int b2MinX = anchor2.X;
+            int b2MaxX = anchor2.X + size2 - 1;
+            int b2MinY = anchor2.Y;
+            int b2MaxY = anchor2.Y + size2 - 1;
+
+            // Check for overlap
+            bool overlapsX = b1MinX <= b2MaxX && b2MinX <= b1MaxX;
+            bool overlapsY = b1MinY <= b2MaxY && b2MinY <= b1MaxY;
+
+            if (overlapsX && overlapsY)
+                return true; // Overlapping
+
+            // Calculate Chebyshev distance between the closest tiles of the two buildings
+            int distX = 0;
+            if (b1MaxX < b2MinX)
+            {
+                // Building 1 is to the left of Building 2
+                distX = b2MinX - b1MaxX;
+            }
+            else if (b2MaxX < b1MinX)
+            {
+                // Building 2 is to the left of Building 1
+                distX = b1MinX - b2MaxX;
+            }
+
+            int distY = 0;
+            if (b1MaxY < b2MinY)
+            {
+                // Building 1 is below Building 2
+                distY = b2MinY - b1MaxY;
+            }
+            else if (b2MaxY < b1MinY)
+            {
+                // Building 2 is below Building 1
+                distY = b1MinY - b2MaxY;
+            }
+
+            int chebyshevDistance = System.Math.Max(distX, distY);
+            return chebyshevDistance < 2; // Too close if Chebyshev distance < 2 (less than 1 tile gap)
+        }
+    }
+}
