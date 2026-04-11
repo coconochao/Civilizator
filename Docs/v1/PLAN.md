@@ -895,6 +895,45 @@ Each task: **Spec reference**, **Do**, **Verification**.
 
 ---
 
+## How to run tests
+
+This project contains NUnit test suites organized in two test assemblies:
+- `Civilizator.Simulation.Tests` (location: `Assets/Civilizator/Simulation/Tests/`) — simulation logic tests
+- `Civilizator.Presentation.Tests` (location: `Assets/Civilizator/Presentation/Tests/`) — presentation driver tests
+
+### Running tests via the Unity Editor GUI (recommended)
+
+1. **Open the project in Unity Editor** (version 6000.4.1f1)
+2. **Open the Test Runner window**: `Window → Testing → Test Runner`
+3. **Click "EditMode"** tab to view all edit-mode tests
+4. **Run all tests**: Click the green play icon in the Test Runner window, or run individual tests by clicking their play icons
+5. **View results**: Passed tests show green checkmarks; failed tests show red X and error messages
+
+Tests will be discovered automatically when the test assemblies compile. If tests don't appear in the Test Runner, try:
+- Recompiling scripts: `Assets → Reimport All`
+- Reloading the project: Close and re-open the Test Runner window
+
+### Running tests via command line (headless)
+
+Command-line test execution is **not currently working** in this project (Unity 6000.4.1f1 has a test discovery issue in headless mode). Use the Unity Editor GUI instead.
+
+If you need CI/CD integration for tests, open the Unity Editor once to verify tests pass, then implement a CI step using the Editor GUI approach (requires a display or Virtual Display).
+
+### Test coverage
+
+Current test suites validate:
+- **Grid & positioning**: `GridPosTests.cs` — Manhattan distance, bounds checking
+- **Building placement**: `BuildingPlacementTests.cs` — overlap rules, gap validation, resource facility node matching
+- **World generation**: `WorldGeneratorTests.cs` — region distribution, deterministic seeding, collision detection
+- **Simulation clock**: `SimulationClockTests.cs` — cycle advancement, frame-rate independence
+- **Pathfinding**: `PathfindingTests.cs` — 4-way BFS, obstacle avoidance, regression scenarios
+- **Grid occupancy**: `GridOccupancyTests.cs` — tile passability, building footprints
+- **Presentation**: `SimulationTickDriverTests.cs` — driver loop timing and state management
+
+All tests use NUnit 3.x framework and can be run in EditMode (no play mode tests at this stage).
+
+---
+
 ## Implementation log
 
 _Append one line per completed task (optional but recommended)._
