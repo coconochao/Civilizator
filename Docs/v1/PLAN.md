@@ -74,7 +74,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 - [x] **T-030** — Grid occupancy model (multi-unit same tile allowed)
 - [x] **T-031** — 4-way BFS or A* from A to B on passable tiles
-- [ ] **T-032** — Nearest tile queries using Manhattan for “nearest” heuristics
+- [x] **T-032** — Nearest tile queries using Manhattan for “nearest” heuristics
 - [ ] **T-033** — Pathfinding unit test or deterministic scenario
 
 ### Phase E — Central building & storage

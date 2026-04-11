@@ -75,6 +75,70 @@ namespace Civilizator.Simulation
         }
 
         /// <summary>
+        /// Finds the nearest reachable tile to a target position using Manhattan distance.
+        /// If multiple tiles are equidistant, deterministically picks the one with lowest X first, then lowest Y.
+        /// </summary>
+        /// <param name="start">Starting grid position of the agent</param>
+        /// <param name="targetCenter">The center position to find nearest tile to (e.g., a natural node)</param>
+        /// <param name="occupancy">Grid occupancy model to check passable tiles</param>
+        /// <returns>The nearest passable tile reachable from start, or null if no reachable tile exists</returns>
+        public static GridPos? FindNearestReachableTile(GridPos start, GridPos targetCenter, GridOccupancy occupancy)
+        {
+            if (!occupancy.IsPassable(start))
+            {
+                return null;
+            }
+
+            var visited = new HashSet<GridPos>();
+            var queue = new Queue<GridPos>();
+            GridPos? nearest = null;
+            int nearestDistance = int.MaxValue;
+
+            queue.Enqueue(start);
+            visited.Add(start);
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+
+                // Calculate Manhattan distance from current tile to target center
+                int distance = GridPos.Manhattan(current, targetCenter);
+
+                // Update nearest if this tile is closer, or equidistant but smaller (X, then Y)
+                if (distance < nearestDistance || 
+                    (distance == nearestDistance && (nearest == null || IsSmaller(current, nearest.Value))))
+                {
+                    nearest = current;
+                    nearestDistance = distance;
+                }
+
+                // Explore 4-way neighbors
+                var neighbors = GetFourWayNeighbors(current);
+                foreach (var neighbor in neighbors)
+                {
+                    if (!visited.Contains(neighbor) && occupancy.IsPassable(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            return nearest;
+        }
+
+        /// <summary>
+        /// Deterministic tie-breaker: returns true if pos1 is "smaller" than pos2.
+        /// Compares X first, then Y (both ascending).
+        /// </summary>
+        private static bool IsSmaller(GridPos pos1, GridPos pos2)
+        {
+            if (pos1.X != pos2.X)
+                return pos1.X < pos2.X;
+            return pos1.Y < pos2.Y;
+        }
+
+        /// <summary>
         /// Gets the four neighboring tiles (North, East, South, West) for a given position.
         /// </summary>
         private static List<GridPos> GetFourWayNeighbors(GridPos pos)
