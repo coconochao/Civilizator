@@ -22,6 +22,11 @@ namespace Civilizator.Simulation
         public bool HasEatenThisCycle { get; set; } = false;
 
         /// <summary>
+        /// Tracks eating state including starvation penalties.
+        /// </summary>
+        public AgentEatingState EatingState { get; } = new AgentEatingState();
+
+        /// <summary>
         /// Default hit points for newly spawned agents.
         /// </summary>
         public const int DefaultHitPoints = 10;
@@ -76,14 +81,19 @@ namespace Civilizator.Simulation
 
         /// <summary>
         /// Gets the total productivity multiplier for this agent.
-        /// Base multiplier by life stage + house assignment bonus (if assigned).
+        /// Base multiplier by life stage + house assignment bonus (if assigned) - starvation penalty.
         /// </summary>
         public float GetProductivityMultiplier()
         {
             float baseMultiplier = LifeStageHelpers.GetProductivityMultiplier(LifeStage);
             if (IsHouseAssigned)
-                return baseMultiplier + HouseAssignmentBonus;
-            return baseMultiplier;
+                baseMultiplier += HouseAssignmentBonus;
+            
+            // Apply starvation penalty (subtractive)
+            float withStarvation = baseMultiplier - EatingState.StarvationPenalty;
+            
+            // Clamp to [0, ∞) range (can't go negative)
+            return System.Math.Max(0f, withStarvation);
         }
 
         /// <summary>

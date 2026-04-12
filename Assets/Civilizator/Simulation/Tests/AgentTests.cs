@@ -651,4 +651,276 @@ namespace Civilizator.Simulation.Tests
             }
         }
     }
+
+    [TestFixture]
+    public class AgentStarvationTests
+    {
+        [Test]
+        public void EatingState_InitializesWithNoPenalty()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            Assert.AreEqual(0f, agent.EatingState.StarvationPenalty);
+        }
+
+        [Test]
+        public void ApplyStarvationPenalty_ReducesProductivity()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            // Base multiplier for Adult: 1.0
+            Assert.AreEqual(1.0f, agent.GetProductivityMultiplier());
+
+            // Apply one starvation penalty (-25%)
+            agent.EatingState.ApplyStarvationPenalty();
+            Assert.AreEqual(0.75f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void StarvationPenalty_StacksAdditively()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            
+            // Apply 4 penalties (each -25%)
+            for (int i = 0; i < 4; i++)
+            {
+                agent.EatingState.ApplyStarvationPenalty();
+            }
+
+            // Should reach 0% (1.0 - 1.0 = 0.0)
+            Assert.AreEqual(0f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void StarvationPenalty_CapsAt100Percent()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            
+            // Apply 10 penalties (way more than needed to cap)
+            for (int i = 0; i < 10; i++)
+            {
+                agent.EatingState.ApplyStarvationPenalty();
+            }
+
+            // Penalty should be capped at 1.0
+            Assert.AreEqual(1.0f, agent.EatingState.StarvationPenalty);
+            Assert.AreEqual(0f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void ResetStarvationPenalty_ClearsStarvation()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            agent.EatingState.ApplyStarvationPenalty();
+            agent.EatingState.ApplyStarvationPenalty();
+            
+            Assert.AreEqual(0.5f, agent.GetProductivityMultiplier());
+            
+            agent.EatingState.ResetStarvationPenalty();
+            Assert.AreEqual(0f, agent.EatingState.StarvationPenalty);
+            Assert.AreEqual(1.0f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void StarvationPenalty_InteractsWithHouseBonus()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            agent.AssignedHouseId = 1; // +20% bonus
+            
+            // Without starvation: 1.0 + 0.2 = 1.2
+            Assert.AreEqual(1.2f, agent.GetProductivityMultiplier());
+            
+            // Apply starvation: 1.2 - 0.25 = 0.95
+            agent.EatingState.ApplyStarvationPenalty();
+            Assert.AreEqual(0.95f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void ProductivityMultiplier_NeverGoesNegative()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Child);
+            // Base: 0.5, with starvation capping at 0.5 + 1.0 penalty = -0.5, should clamp to 0
+            
+            agent.EatingState.ApplyStarvationPenalty();
+            agent.EatingState.ApplyStarvationPenalty();
+            agent.EatingState.ApplyStarvationPenalty();
+            
+            Assert.AreEqual(0f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void IsDeadFromStarvation_ReturnsTrue_At100Percent()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            Assert.IsFalse(agent.EatingState.IsDeadFromStarvation);
+            
+            // Apply 4 penalties to reach 100%
+            for (int i = 0; i < 4; i++)
+            {
+                agent.EatingState.ApplyStarvationPenalty();
+            }
+            
+            Assert.IsTrue(agent.EatingState.IsDeadFromStarvation);
+        }
+    }
+
+    [TestFixture]
+    public class EatingActionTests
+    {
+        [Test]
+        public void EatingAction_InitializeWithAgentAndLocation()
+        {
+            var agent = new Agent(new GridPos(5, 5));
+            var center = new GridPos(50, 50);
+            var action = new EatingAction(agent, center);
+            
+            Assert.AreEqual(agent, action.Agent);
+            Assert.AreEqual(center, action.CentralBuildingLocation);
+            Assert.IsFalse(action.IsComplete);
+            Assert.IsFalse(action.WasSuccessful);
+        }
+
+        [Test]
+        public void EatingAction_AtCenterImmediately_IfAlreadyThere()
+        {
+            var center = new GridPos(50, 50);
+            var agent = new Agent(center);
+            var action = new EatingAction(agent, center);
+            
+            var occupancy = new GridOccupancy();
+            action.InitializePath(occupancy);
+            
+            Assert.IsTrue(action.HasReachedCenter);
+        }
+
+        [Test]
+        public void EatingAction_ConsumesMeatIfAvailable()
+        {
+            var center = new GridPos(50, 50);
+            var agent = new Agent(center);
+            var action = new EatingAction(agent, center);
+            
+            var storage = new CentralStorage();
+            storage.Deposit(ResourceKind.Meat, 5);
+            
+            var occupancy = new GridOccupancy();
+            action.InitializePath(occupancy);
+            
+            // Simulate eating
+            action.Update(1.5f, storage); // Simulate 1.5 seconds (exceeds 1 second eating time)
+            
+            Assert.IsTrue(action.IsComplete);
+            Assert.IsTrue(action.WasSuccessful);
+            Assert.AreEqual(4, storage.GetStock(ResourceKind.Meat)); // One consumed
+        }
+
+        [Test]
+        public void EatingAction_ConsumesPlantFoodIfMeatUnavailable()
+        {
+            var center = new GridPos(50, 50);
+            var agent = new Agent(center);
+            var action = new EatingAction(agent, center);
+            
+            var storage = new CentralStorage();
+            storage.Deposit(ResourceKind.PlantFood, 3);
+            
+            var occupancy = new GridOccupancy();
+            action.InitializePath(occupancy);
+            
+            // Simulate eating
+            action.Update(1.5f, storage);
+            
+            Assert.IsTrue(action.IsComplete);
+            Assert.IsTrue(action.WasSuccessful);
+            Assert.AreEqual(2, storage.GetStock(ResourceKind.PlantFood)); // One consumed
+        }
+
+        [Test]
+        public void EatingAction_PrefersMeatOverPlantFood()
+        {
+            var center = new GridPos(50, 50);
+            var agent = new Agent(center);
+            var action = new EatingAction(agent, center);
+            
+            var storage = new CentralStorage();
+            storage.Deposit(ResourceKind.Meat, 2);
+            storage.Deposit(ResourceKind.PlantFood, 5);
+            
+            var occupancy = new GridOccupancy();
+            action.InitializePath(occupancy);
+            
+            // Simulate eating
+            action.Update(1.5f, storage);
+            
+            Assert.AreEqual(1, storage.GetStock(ResourceKind.Meat)); // Meat consumed
+            Assert.AreEqual(5, storage.GetStock(ResourceKind.PlantFood)); // PlantFood untouched
+        }
+
+        [Test]
+        public void EatingAction_FailsWhenNoFoodAvailable()
+        {
+            var center = new GridPos(50, 50);
+            var agent = new Agent(center);
+            var action = new EatingAction(agent, center);
+            
+            var storage = new CentralStorage(); // Empty storage
+            
+            var occupancy = new GridOccupancy();
+            action.InitializePath(occupancy);
+            
+            // Simulate eating
+            action.Update(1.5f, storage);
+            
+            Assert.IsTrue(action.IsComplete);
+            Assert.IsFalse(action.WasSuccessful);
+        }
+
+        [Test]
+        public void EatingAction_RequiresFullSecond()
+        {
+            var center = new GridPos(50, 50);
+            var agent = new Agent(center);
+            var action = new EatingAction(agent, center);
+            
+            var storage = new CentralStorage();
+            storage.Deposit(ResourceKind.Meat, 1);
+            
+            var occupancy = new GridOccupancy();
+            action.InitializePath(occupancy);
+            
+            // Simulate 0.5 seconds (less than eating time)
+            action.Update(0.5f, storage);
+            Assert.IsFalse(action.IsComplete);
+            
+            // Simulate another 0.4 seconds (total 0.9, still not complete)
+            action.Update(0.4f, storage);
+            Assert.IsFalse(action.IsComplete);
+            
+            // Simulate another 0.2 seconds (total 1.1, should complete)
+            action.Update(0.2f, storage);
+            Assert.IsTrue(action.IsComplete);
+            Assert.IsTrue(action.WasSuccessful);
+        }
+
+        [Test]
+        public void EatingAction_FailsWhenNoPathAvailable()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            var center = new GridPos(50, 50);
+            var action = new EatingAction(agent, center);
+            
+            // Create occupancy that blocks all paths
+            var occupancy = new GridOccupancy();
+            for (int x = 0; x < 100; x++)
+            {
+                for (int y = 0; y < 100; y++)
+                {
+                    occupancy.RegisterOccupant(new GridPos(x, y));
+                }
+            }
+            
+            action.InitializePath(occupancy);
+            
+            Assert.IsTrue(action.IsComplete);
+            Assert.IsFalse(action.WasSuccessful);
+        }
+    }
 }

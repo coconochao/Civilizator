@@ -109,7 +109,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 ### Phase I — Eating & starvation
 
 - [x] **T-080** — Once per cycle eating requirement
-- [ ] **T-081** — Eat: travel to central, 1 second eat, consume 1 Meat or Plant food
+- [x] **T-081** — Eat: travel to central, 1 second eat, consume 1 Meat or Plant food
 - [ ] **T-082** — No food: −25% productivity additive per failed cycle; death at 0%
 
 ### Phase J — Housing
@@ -988,3 +988,5 @@ Meat); ignores non-resource buildings. Added 13 comprehensive NUnit tests in `Fa
 Death), multi-agent independent counters, death handling. Verification: agents age correctly through all stages. Files: `AgingSystem.cs`, `AgingSystemTests.cs`.
 
 - 2026-04-12 | T-080 | **Implemented Once Per Cycle Eating Requirement.** Added `bool HasEatenThisCycle` property to `Agent` class (initialized to false). Added `MarkAsEaten()` method to set flag when agent eats, and `ResetEatingFlag()` method to reset at start of new cycle. Added 8 comprehensive NUnit tests in `AgentEatingTests.cs` covering: initialization (flag false), marking eaten (flag true), resetting flag, cycle progression (eat, reset, eat again), independent flags for multiple agents, persistence through other state changes, all life stages, all professions. Verification: agent eats at most once per cycle (flag prevents multiple eats in same cycle). Tests use standard NUnit assertions. Files: `Agent.cs` (extended), `AgentTests.cs` (extended with new test class).
+
+- 2026-04-12 | T-081 | **Implemented Eating Action & Starvation Mechanics.** Created `AgentEatingState.cs` class tracking starvation penalty (−25% per failed cycle, capped at 100%). Created `EatingAction.cs` class managing eating behavior: (1) path-finding to central building using existing `Pathfinding.FindPath()`, (2) 1-second eating timer via `Update(deltaTime)`, (3) food consumption with preference (Meat → PlantFood). Extended `Agent.GetProductivityMultiplier()` to apply starvation penalty subtractively (base + house − starvation, clamped ≥ 0). Added 17 comprehensive NUnit tests: `AgentStarvationTests` (8 tests for penalty stacking, capping, house interaction, productivity clamping) and `EatingActionTests` (9 tests for pathfinding, timer, Meat/PlantFood consumption, preference logic, failure cases). Verification: stock decreases by 1; productivity unpenalized if food available; ready for T-082 (fail-cycle integration). Files: `AgentEatingState.cs`, `EatingAction.cs`, `Agent.cs` (extended), `AgentTests.cs` (extended).
