@@ -14,7 +14,8 @@ namespace Civilizator.Simulation
     /// <summary>
     /// A natural resource node on the map.
     /// Nodes have a type and deplete when gathered from.
-    /// Once depleted (remaining = 0), they are permanently unavailable.
+    /// Normal nodes (Tree, Plant, Animal, Ore without quarry support) are permanently unavailable once depleted.
+    /// Ore nodes with quarry support can be gathered indefinitely even when remaining ≤ 0.
     /// </summary>
     public class NaturalNode
     {
@@ -50,8 +51,30 @@ namespace Civilizator.Simulation
 
         /// <summary>
         /// Whether this node is completely depleted.
+        /// For normal nodes (Tree, Plant, Animal): depleted when remaining ≤ 0.
+        /// For ore nodes: check IsGatherable() which considers quarry support.
         /// </summary>
         public bool IsDepleted => Remaining <= 0;
+
+        /// <summary>
+        /// Checks if this node is gatherable, considering quarry support.
+        /// - Normal nodes (Tree, Plant, Animal): gatherable only if remaining > 0.
+        /// - Ore nodes without quarry support: gatherable only if remaining > 0.
+        /// - Ore nodes with quarry support: gatherable even if remaining ≤ 0 (indefinite collection).
+        /// </summary>
+        public bool IsGatherable(bool hasQuarrySupport = false)
+        {
+            // Normal nodes always require remaining > 0
+            if (Type != NaturalNodeType.Ore)
+                return Remaining > 0;
+
+            // Ore without quarry support requires remaining > 0
+            if (!hasQuarrySupport)
+                return Remaining > 0;
+
+            // Ore with quarry support is always gatherable (indefinite)
+            return true;
+        }
 
         public override string ToString()
         {
