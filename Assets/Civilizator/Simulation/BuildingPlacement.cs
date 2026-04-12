@@ -8,11 +8,15 @@ namespace Civilizator.Simulation
     {
         public BuildingKind Kind { get; }
         public GridPos Anchor { get; }
+        public bool IsUnderConstruction { get; set; }
+        public int UpgradeLevel { get; set; }
 
         public Building(BuildingKind kind, GridPos anchor)
         {
             Kind = kind;
             Anchor = anchor;
+            IsUnderConstruction = false;
+            UpgradeLevel = 0;
         }
 
         /// <summary>

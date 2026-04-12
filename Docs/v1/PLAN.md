@@ -85,7 +85,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase F — Buildings & construction state
 
-- [ ] **T-050** — Building instance: position, kind, under construction flag, upgrade level (max 1 upgrade)
+- [x] **T-050** — Building instance: position, kind, under construction flag, upgrade level (max 1 upgrade)
 - [ ] **T-051** — Construction progress = total delivered build resources (integer)
 - [ ] **T-052** — Costs: civil 100 Logs build/upgrade; tower 100 Ore build/upgrade
 - [ ] **T-053** — Complete when progress ≥ required **and** final worker finishes build-time

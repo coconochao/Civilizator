@@ -275,5 +275,54 @@ namespace Civilizator.Simulation.Tests
                 buildings, BuildingKind.Plantation, new GridPos(10, 10), null);
             Assert.IsFalse(canPlace, "Resource facility with null nodes list should fail");
         }
+
+        // ===== Building State Tests (T-050) =====
+
+        [Test]
+        public void Building_CreatedWithDefaultState()
+        {
+            var building = new Building(BuildingKind.House, new GridPos(10, 10));
+
+            Assert.AreEqual(BuildingKind.House, building.Kind);
+            Assert.AreEqual(new GridPos(10, 10), building.Anchor);
+            Assert.IsFalse(building.IsUnderConstruction, "Building should not be under construction by default");
+            Assert.AreEqual(0, building.UpgradeLevel, "Building should start at upgrade level 0");
+        }
+
+        [Test]
+        public void Building_CanSetUnderConstruction()
+        {
+            var building = new Building(BuildingKind.Tower, new GridPos(20, 20));
+
+            building.IsUnderConstruction = true;
+            Assert.IsTrue(building.IsUnderConstruction);
+
+            building.IsUnderConstruction = false;
+            Assert.IsFalse(building.IsUnderConstruction);
+        }
+
+        [Test]
+        public void Building_CanSetUpgradeLevel()
+        {
+            var building = new Building(BuildingKind.Plantation, new GridPos(30, 30));
+
+            Assert.AreEqual(0, building.UpgradeLevel);
+
+            building.UpgradeLevel = 1;
+            Assert.AreEqual(1, building.UpgradeLevel, "Building should support upgrade level 1");
+
+            building.UpgradeLevel = 0;
+            Assert.AreEqual(0, building.UpgradeLevel);
+        }
+
+        [Test]
+        public void Building_UpgradeLevelMaxIsOne()
+        {
+            var building = new Building(BuildingKind.Central, new GridPos(0, 0));
+
+            // The spec specifies max 1 upgrade in V1
+            building.UpgradeLevel = 1;
+            Assert.AreEqual(1, building.UpgradeLevel, "Max upgrade level should be 1 in V1");
+        }
     }
 }
