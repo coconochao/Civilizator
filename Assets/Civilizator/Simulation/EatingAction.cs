@@ -132,27 +132,20 @@ namespace Civilizator.Simulation
         }
 
         /// <summary>
-        /// Attempts to consume 1 unit of food from central storage (Meat or Plant Food).
-        /// Prefers Meat if available, falls back to PlantFood.
-        /// Returns true if food was consumed, false if no food available.
+        /// Attempts to consume 1 Meat and 1 Plant Food from central storage.
+        /// Both types are required; returns true only if both can be withdrawn.
         /// </summary>
         private bool TryConsumeFood(CentralStorage storage)
         {
-            // Try to consume Meat first
-            if (storage.GetStock(ResourceKind.Meat) > 0)
+            // Check if both Meat and PlantFood are available
+            if (storage.GetStock(ResourceKind.Meat) >= 1 && storage.GetStock(ResourceKind.PlantFood) >= 1)
             {
                 storage.Withdraw(ResourceKind.Meat, 1);
-                return true;
-            }
-
-            // Fall back to Plant Food
-            if (storage.GetStock(ResourceKind.PlantFood) > 0)
-            {
                 storage.Withdraw(ResourceKind.PlantFood, 1);
                 return true;
             }
 
-            // No food available
+            // Not enough of one or both food types
             return false;
         }
     }

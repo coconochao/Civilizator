@@ -792,7 +792,7 @@ namespace Civilizator.Simulation.Tests
         }
 
         [Test]
-        public void EatingAction_ConsumesMeatIfAvailable()
+        public void EatingAction_ConsumesBothMeatAndPlantFood()
         {
             var center = new GridPos(50, 50);
             var agent = new Agent(center);
@@ -800,6 +800,7 @@ namespace Civilizator.Simulation.Tests
             
             var storage = new CentralStorage();
             storage.Deposit(ResourceKind.Meat, 5);
+            storage.Deposit(ResourceKind.PlantFood, 5);
             
             var occupancy = new GridOccupancy();
             action.InitializePath(occupancy);
@@ -810,17 +811,18 @@ namespace Civilizator.Simulation.Tests
             Assert.IsTrue(action.IsComplete);
             Assert.IsTrue(action.WasSuccessful);
             Assert.AreEqual(4, storage.GetStock(ResourceKind.Meat)); // One consumed
+            Assert.AreEqual(4, storage.GetStock(ResourceKind.PlantFood)); // One consumed
         }
 
         [Test]
-        public void EatingAction_ConsumesPlantFoodIfMeatUnavailable()
+        public void EatingAction_FailsWithoutMeat()
         {
             var center = new GridPos(50, 50);
             var agent = new Agent(center);
             var action = new EatingAction(agent, center);
             
             var storage = new CentralStorage();
-            storage.Deposit(ResourceKind.PlantFood, 3);
+            storage.Deposit(ResourceKind.PlantFood, 3); // Only PlantFood, no Meat
             
             var occupancy = new GridOccupancy();
             action.InitializePath(occupancy);
@@ -829,20 +831,19 @@ namespace Civilizator.Simulation.Tests
             action.Update(1.5f, storage);
             
             Assert.IsTrue(action.IsComplete);
-            Assert.IsTrue(action.WasSuccessful);
-            Assert.AreEqual(2, storage.GetStock(ResourceKind.PlantFood)); // One consumed
+            Assert.IsFalse(action.WasSuccessful); // Failed due to no Meat
+            Assert.AreEqual(3, storage.GetStock(ResourceKind.PlantFood)); // Untouched
         }
 
         [Test]
-        public void EatingAction_PrefersMeatOverPlantFood()
+        public void EatingAction_FailsWithoutPlantFood()
         {
             var center = new GridPos(50, 50);
             var agent = new Agent(center);
             var action = new EatingAction(agent, center);
             
             var storage = new CentralStorage();
-            storage.Deposit(ResourceKind.Meat, 2);
-            storage.Deposit(ResourceKind.PlantFood, 5);
+            storage.Deposit(ResourceKind.Meat, 3); // Only Meat, no PlantFood
             
             var occupancy = new GridOccupancy();
             action.InitializePath(occupancy);
@@ -850,8 +851,9 @@ namespace Civilizator.Simulation.Tests
             // Simulate eating
             action.Update(1.5f, storage);
             
-            Assert.AreEqual(1, storage.GetStock(ResourceKind.Meat)); // Meat consumed
-            Assert.AreEqual(5, storage.GetStock(ResourceKind.PlantFood)); // PlantFood untouched
+            Assert.IsTrue(action.IsComplete);
+            Assert.IsFalse(action.WasSuccessful); // Failed due to no PlantFood
+            Assert.AreEqual(3, storage.GetStock(ResourceKind.Meat)); // Untouched
         }
 
         [Test]
