@@ -18,6 +18,22 @@ namespace Civilizator.Simulation
         /// </summary>
         public int ConstructionProgress { get; set; }
 
+        /// <summary>
+        /// Build-time end timestamp (simulation time in seconds).
+        /// The building's current construction phase is not complete until:
+        /// 1. ConstructionProgress >= required amount, AND
+        /// 2. SimulationClock.TotalSimulationSeconds >= BuildTimeEndSeconds
+        /// 
+        /// Set to 0 when no build-time is active.
+        /// </summary>
+        public float BuildTimeEndSeconds { get; set; }
+
+        /// <summary>
+        /// Reference to the simulation clock for build-time calculations.
+        /// Can be null if only progress-based completion is used.
+        /// </summary>
+        public SimulationClock SimulationClock { get; set; }
+
         public Building(BuildingKind kind, GridPos anchor)
         {
             Kind = kind;
@@ -25,6 +41,8 @@ namespace Civilizator.Simulation
             IsUnderConstruction = false;
             UpgradeLevel = 0;
             ConstructionProgress = 0;
+            BuildTimeEndSeconds = 0f;
+            SimulationClock = null;
         }
 
         /// <summary>
@@ -75,17 +93,69 @@ namespace Civilizator.Simulation
         /// <summary>
         /// Increments construction progress by the given amount.
         /// Progress is capped at the required amount (never exceeds it).
+        /// 
+        /// If this delivery completes the required amount, a build-time is scheduled:
+        /// build_time (seconds) = delivered_units * (1 / productivity_multiplier)
+        /// 
+        /// The building's construction phase is not complete until both:
+        /// 1. Progress >= required amount
+        /// 2. The scheduled build-time expires
+        /// 
+        /// If SimulationClock is not set, completion gates are based on progress alone.
         /// </summary>
-        public void DeliverBuildResources(int amount)
+        public void DeliverBuildResources(int amount, float productivityMultiplier = 1f)
         {
             if (amount < 0)
                 throw new System.ArgumentException("Delivery amount must be non-negative.");
+            
+            if (productivityMultiplier <= 0)
+                throw new System.ArgumentException("Productivity multiplier must be positive.");
 
             int required = GetRequiredConstructionAmount();
             if (required == 0)
                 return; // No construction in progress
 
+            int previousProgress = ConstructionProgress;
             ConstructionProgress = System.Math.Min(ConstructionProgress + amount, required);
+
+            // If this delivery completed the required amount and we have a clock, schedule build-time
+            if (SimulationClock != null && previousProgress < required && ConstructionProgress >= required)
+            {
+                // Build-time = delivered_units * (1 / productivity_multiplier)
+                float buildTimeSeconds = amount * (1f / productivityMultiplier);
+                float currentSimTime = SimulationClock.TotalSimulationSeconds;
+                BuildTimeEndSeconds = currentSimTime + buildTimeSeconds;
+            }
+        }
+
+        /// <summary>
+        /// Check if the building's current construction phase is complete.
+        /// 
+        /// Completion requires:
+        /// 1. ConstructionProgress >= required amount
+        /// 2. Build-time (if scheduled) has expired (if SimulationClock is set)
+        /// </summary>
+        public bool IsConstructionPhaseComplete()
+        {
+            int required = GetRequiredConstructionAmount();
+            
+            // No construction in progress
+            if (required == 0)
+                return true;
+
+            // Progress not yet met
+            if (ConstructionProgress < required)
+                return false;
+
+            // Progress met, check if build-time is satisfied (if clock is available)
+            if (SimulationClock != null && BuildTimeEndSeconds > 0f)
+            {
+                float currentSimTime = SimulationClock.TotalSimulationSeconds;
+                return currentSimTime >= BuildTimeEndSeconds;
+            }
+
+            // No build-time gate active or no clock set; completion based on progress alone
+            return true;
         }
 
         /// <summary>

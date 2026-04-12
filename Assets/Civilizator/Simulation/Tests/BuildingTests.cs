@@ -215,6 +215,177 @@ namespace Civilizator.Simulation.Tests
             building.ConstructionProgress = 50;
             Assert.AreEqual(50, building.ConstructionProgress);
         }
+
+        [Test]
+        public void IsConstructionPhaseComplete_WithoutClock_BasedonProgressOnly()
+        {
+            var building = new Building(BuildingKind.House, new GridPos(0, 0));
+            building.IsUnderConstruction = true;
+            int required = building.GetRequiredConstructionAmount();
+
+            // Without a clock, completion is progress-based only
+            building.ConstructionProgress = required - 1;
+            Assert.IsFalse(building.IsConstructionPhaseComplete());
+
+            building.ConstructionProgress = required;
+            Assert.IsTrue(building.IsConstructionPhaseComplete());
+        }
+
+        [Test]
+        public void DeliverBuildResources_WithClock_SchedulesBuildTime()
+        {
+            var clock = new SimulationClock();
+            var building = new Building(BuildingKind.House, new GridPos(0, 0));
+            building.SimulationClock = clock;
+            building.IsUnderConstruction = true;
+            int required = building.GetRequiredConstructionAmount();
+
+            // Deliver resources to complete the required amount
+            building.DeliverBuildResources(required, productivityMultiplier: 1f);
+
+            // BuildTimeEndSeconds should be set
+            Assert.Greater(building.BuildTimeEndSeconds, 0f);
+            Assert.AreEqual(required, building.BuildTimeEndSeconds);
+        }
+
+        [Test]
+        public void IsConstructionPhaseComplete_WithClock_GatedByBuildTime()
+        {
+            var clock = new SimulationClock();
+            var building = new Building(BuildingKind.Tower, new GridPos(0, 0));
+            building.SimulationClock = clock;
+            building.IsUnderConstruction = true;
+            int required = building.GetRequiredConstructionAmount();
+
+            // Deliver required amount; build-time is scheduled
+            building.DeliverBuildResources(required, productivityMultiplier: 1f);
+
+            // At this point, progress is met but build-time hasn't elapsed
+            Assert.AreEqual(required, building.ConstructionProgress);
+            Assert.IsFalse(building.IsConstructionPhaseComplete());
+
+            // Advance clock past build-time
+            float buildTimeSeconds = required * (1f / 1f); // 100 seconds
+            clock.Advance(buildTimeSeconds + 0.1f);
+
+            // Now the building should be complete
+            Assert.IsTrue(building.IsConstructionPhaseComplete());
+        }
+
+        [Test]
+        public void BuildTimeCalculation_Adult_ProductivityOnePointZero()
+        {
+            // Adult with productivity 1.0 delivers 10 units
+            // Build-time = 10 * (1 / 1.0) = 10 seconds
+            var clock = new SimulationClock();
+            var building = new Building(BuildingKind.House, new GridPos(0, 0));
+            building.SimulationClock = clock;
+            building.IsUnderConstruction = true;
+
+            // Deliver 10 units with adult productivity
+            building.DeliverBuildResources(10, productivityMultiplier: 1f);
+
+            // BuildTimeEndSeconds should be 10 (current time 0 + 10 seconds)
+            Assert.AreEqual(10f, building.BuildTimeEndSeconds);
+        }
+
+        [Test]
+        public void BuildTimeCalculation_Child_ProductivityHalf()
+        {
+            // Child with productivity 0.5 delivers 10 units
+            // Build-time = 10 * (1 / 0.5) = 20 seconds
+            var clock = new SimulationClock();
+            var building = new Building(BuildingKind.House, new GridPos(0, 0));
+            building.SimulationClock = clock;
+            building.IsUnderConstruction = true;
+
+            // Deliver 10 units with child productivity
+            building.DeliverBuildResources(10, productivityMultiplier: 0.5f);
+
+            // BuildTimeEndSeconds should be 20 (current time 0 + 20 seconds)
+            Assert.AreEqual(20f, building.BuildTimeEndSeconds);
+        }
+
+        [Test]
+        public void BuildTime_MultipleDeliveries_LastOneMatters()
+        {
+            var clock = new SimulationClock();
+            var building = new Building(BuildingKind.Farm, new GridPos(0, 0));
+            building.SimulationClock = clock;
+            building.IsUnderConstruction = true;
+            int required = building.GetRequiredConstructionAmount();
+
+            int quarter = required / 4;
+
+            // First delivery: incomplete
+            building.DeliverBuildResources(quarter, productivityMultiplier: 1f);
+            Assert.AreEqual(0f, building.BuildTimeEndSeconds); // No build-time yet
+
+            // Second delivery: still incomplete
+            building.DeliverBuildResources(quarter, productivityMultiplier: 1f);
+            Assert.AreEqual(0f, building.BuildTimeEndSeconds); // No build-time yet
+
+            // Third delivery: still incomplete
+            building.DeliverBuildResources(quarter, productivityMultiplier: 1f);
+            Assert.AreEqual(0f, building.BuildTimeEndSeconds); // No build-time yet
+
+            // Fourth delivery: completes with different productivity
+            building.DeliverBuildResources(quarter, productivityMultiplier: 0.5f);
+
+            // Build-time should be based on the final delivery only
+            // (quarter units with 0.5 productivity = quarter * 2 seconds)
+            float expectedBuildTime = quarter * (1f / 0.5f);
+            Assert.AreEqual(expectedBuildTime, building.BuildTimeEndSeconds);
+        }
+
+        [Test]
+        public void BuildTime_NotScheduledIfClockNotSet()
+        {
+            // Without a clock, build-time is not scheduled
+            var building = new Building(BuildingKind.House, new GridPos(0, 0));
+            building.IsUnderConstruction = true;
+            int required = building.GetRequiredConstructionAmount();
+
+            building.DeliverBuildResources(required, productivityMultiplier: 1f);
+
+            // BuildTimeEndSeconds should remain 0 (not set)
+            Assert.AreEqual(0f, building.BuildTimeEndSeconds);
+        }
+
+        [Test]
+        public void BuildTime_InvalidProductivity_Throws()
+        {
+            var building = new Building(BuildingKind.House, new GridPos(0, 0));
+            building.IsUnderConstruction = true;
+
+            Assert.Throws<System.ArgumentException>(
+                () => building.DeliverBuildResources(10, productivityMultiplier: 0f)
+            );
+
+            Assert.Throws<System.ArgumentException>(
+                () => building.DeliverBuildResources(10, productivityMultiplier: -1f)
+            );
+        }
+
+        [Test]
+        public void Upgrade_BuildTimeWorks_SameAsConstruction()
+        {
+            // Verify build-time mechanism works for upgrades too
+            var clock = new SimulationClock();
+            var building = new Building(BuildingKind.Tower, new GridPos(0, 0));
+            building.SimulationClock = clock;
+            building.IsUnderConstruction = false;
+            building.UpgradeLevel = 0;
+
+            int upgradeCost = building.GetRequiredConstructionAmount();
+            building.DeliverBuildResources(upgradeCost, productivityMultiplier: 1f);
+
+            Assert.AreEqual(upgradeCost, building.BuildTimeEndSeconds);
+            Assert.IsFalse(building.IsConstructionPhaseComplete());
+
+            clock.Advance(upgradeCost + 0.1f);
+            Assert.IsTrue(building.IsConstructionPhaseComplete());
+        }
     }
 
     [TestFixture]
