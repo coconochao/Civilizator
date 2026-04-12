@@ -100,11 +100,11 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase H — Agents: core stats
 
-- [ ] **T-070** — Agent model: position, profession, life stage, HP (10 default)
-- [ ] **T-071** — Productivity multiplier base by stage (Adult 1.0, Child/Elder 0.5)
-- [ ] **T-072** — House assignment flag + +20% productivity when assigned
-- [ ] **T-073** — Carry capacity = 10 × productivity
-- [ ] **T-074** — Aging timers: Child→Adult 10 cycles; Adult→Elder 60; Elder→Death 10
+- [x] **T-070** — Agent model: position, profession, life stage, HP (10 default)
+- [x] **T-071** — Productivity multiplier base by stage (Adult 1.0, Child/Elder 0.5)
+- [x] **T-072** — House assignment flag + +20% productivity when assigned
+- [x] **T-073** — Carry capacity = 10 × productivity
+- [x] **T-074** — Aging timers: Child→Adult 10 cycles; Adult→Elder 60; Elder→Death 10
 
 ### Phase I — Eating & starvation
 
@@ -980,3 +980,9 @@ Meat); ignores non-resource buildings. Added 13 comprehensive NUnit tests in `Fa
 - 2026-04-12 | T-061, T-062 | **T-061 already complete (verified).** Upgraded facilities (Plantation/Farm/CattleFarm) double spawn rate via `UpgradeLevel > 0 ? 2 : 1` spawn attempts in `FacilitySpawner.cs`. Tests verify: upgraded spawns 8 logs per cycle (2 per tile  4 tiles) vs base 4 logs. **T-062: Implemented `QuarrySupport` static helper class** to manage quarry-enabled ore gathering. Core rules: quarry overlaps Ore nodes; enables indefinite collection past depletion; base quarry = half speed (2 gathering time), upgraded = normal speed (1). Added methods: `IsNodeSupportedByQuarry(node, quarries)` (checks footprint overlap), `GetOreGatheringRateMultiplier/TimeMultiplier(node, isDepletedPastZero, quarry)` (returns 0.5/2.0 for base, 1.0/1.0 for upgraded), `FindSupportingQuarry(node, quarries)`. Added 16 NUnit tests in `QuarrySupportTests.cs`: footprint overlap edge cases, multiple quarries, rate/time multiplier reciprocals, base vs upgraded quarry behavior, depletion scenarios. Verification: timed simulation can use multipliers during agent gathering phase (T-130+). Files: `QuarrySupport.cs`, `QuarrySupportTests.cs`, `PLAN.md` (marked T-061/T-062 done).
 
 - 2026-04-12 | T-063 | **Implemented node depletion rules with quarry exception.** Added `IsGatherable(bool hasQuarrySupport)` method to `NaturalNode`: normal nodes (Tree/Plant/Animal) gatherable only if remaining > 0; ore without quarry gatherable only if remaining > 0; ore with quarry always gatherable (indefinite collection past depletion). Added 12 comprehensive NUnit test methods in `NaturalNodeGatherabilityTests` covering: normal node gatherability by type, depletion-gating, quarry-enabled ore indefinite collection, no quarry support for non-ore nodes, depletion sequence validation. Verification: depleted nodes at 0 remaining not gatherable unless quarry-supported ore. Files: `NaturalNode.cs` (modified), `NaturalNodeTests.cs` (extended).
+
+- 2026-04-12 | T-070 | **Implemented Agent model.** Created `Agent` class with properties: Position (GridPos), Profession (enum: 6 types), LifeStage (enum: Child/Adult/Elder), HitPoints (int, default 10). Constructors: `Agent(position)` defaults to Woodcutter/Child/10HP; `Agent(position, profession, stage)` with custom values. Added `IsAlive` property (HP > 0). Created `Profession` enum (Woodcutter, Miner, Hunter, Farmer, Builder, Soldier). Created `LifeStage` enum (Child, Adult, Elder). Created `LifeStageHelpers` static class with constants: `ChildToAdultCycles = 10`, `AdultToElderCycles = 60`, `ElderToDeathCycles = 10`. Added 32 NUnit tests in `AgentTests` covering initialization, all professions/stages, property mutations, multi-agent spawning. Verification: 10 agents spawn without null refs. Files: `Agent.cs`, `AgentTests.cs`.
+
+- 2026-04-12 | T-071, T-072, T-073 | **Implemented productivity and carry capacity system.** T-071: Added `GetProductivityMultiplier()` method returns base by stage (Adult 1.0, Child/Elder 0.5). T-072: Added `AssignedHouseId` (nullable int), `IsHouseAssigned` property, `HouseAssignmentBonus = 0.2f` constant. Productivity with house: Child 0.7, Adult 1.2, Elder 0.7. T-073: Added `GetCarryCapacity()` method = `10  productivity_multiplier`. Base: Child/Elder 5, Adult 10. With house: Child/Elder 7, Adult 12. Added 21 comprehensive tests in `AgentProductivityTests` and `AgentCarryCapacityTests` covering all stages, house assignment, capacity scaling. Verification: carry capacity correctly scales with productivity. Files: `Agent.cs` (extended), `AgentTests.cs` (extended).
+
+Death), multi-agent independent counters, death handling. Verification: agents age correctly through all stages. Files: `AgingSystem.cs`, `AgingSystemTests.cs`.
