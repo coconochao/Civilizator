@@ -16,6 +16,12 @@ namespace Civilizator.Simulation
         public int? AssignedHouseId { get; set; }
 
         /// <summary>
+        /// Tracks whether this agent has eaten during the current cycle.
+        /// Reset at the start of each new cycle.
+        /// </summary>
+        public bool HasEatenThisCycle { get; set; } = false;
+
+        /// <summary>
         /// Default hit points for newly spawned agents.
         /// </summary>
         public const int DefaultHitPoints = 10;
@@ -88,6 +94,23 @@ namespace Civilizator.Simulation
         {
             float productivityMult = GetProductivityMultiplier();
             return (int)(BaseCarryCapacity * productivityMult);
+        }
+
+        /// <summary>
+        /// Marks this agent as having eaten during the current cycle.
+        /// </summary>
+        public void MarkAsEaten()
+        {
+            HasEatenThisCycle = true;
+        }
+
+        /// <summary>
+        /// Resets the eating flag for a new cycle.
+        /// Called at the start of each simulation cycle.
+        /// </summary>
+        public void ResetEatingFlag()
+        {
+            HasEatenThisCycle = false;
         }
 
         public override string ToString()

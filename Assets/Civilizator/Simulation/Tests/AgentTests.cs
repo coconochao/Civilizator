@@ -518,4 +518,137 @@ namespace Civilizator.Simulation.Tests
             }
         }
     }
+
+    [TestFixture]
+    public class AgentEatingTests
+    {
+        [Test]
+        public void HasEatenThisCycle_InitializesAsFalse()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            Assert.IsFalse(agent.HasEatenThisCycle);
+        }
+
+        [Test]
+        public void MarkAsEaten_SetsHasEatenThisCycleToTrue()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            Assert.IsFalse(agent.HasEatenThisCycle);
+            agent.MarkAsEaten();
+            Assert.IsTrue(agent.HasEatenThisCycle);
+        }
+
+        [Test]
+        public void ResetEatingFlag_ClearsHasEatenThisCycle()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            agent.MarkAsEaten();
+            Assert.IsTrue(agent.HasEatenThisCycle);
+            agent.ResetEatingFlag();
+            Assert.IsFalse(agent.HasEatenThisCycle);
+        }
+
+        [Test]
+        public void AgentEatsAtMostOncePerCycle()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            
+            // Cycle 1: Agent eats
+            Assert.IsFalse(agent.HasEatenThisCycle);
+            agent.MarkAsEaten();
+            Assert.IsTrue(agent.HasEatenThisCycle);
+            
+            // Try to mark as eaten again (should still be true, but flag doesn't allow multiple eats)
+            agent.MarkAsEaten();
+            Assert.IsTrue(agent.HasEatenThisCycle);
+            
+            // Cycle 2: Reset flag for new cycle
+            agent.ResetEatingFlag();
+            Assert.IsFalse(agent.HasEatenThisCycle);
+            
+            // Agent eats again in cycle 2
+            agent.MarkAsEaten();
+            Assert.IsTrue(agent.HasEatenThisCycle);
+        }
+
+        [Test]
+        public void MultipleAgents_HaveIndependentEatingFlags()
+        {
+            var agent1 = new Agent(new GridPos(0, 0));
+            var agent2 = new Agent(new GridPos(1, 1));
+            
+            agent1.MarkAsEaten();
+            Assert.IsTrue(agent1.HasEatenThisCycle);
+            Assert.IsFalse(agent2.HasEatenThisCycle);
+            
+            agent2.MarkAsEaten();
+            Assert.IsTrue(agent1.HasEatenThisCycle);
+            Assert.IsTrue(agent2.HasEatenThisCycle);
+            
+            agent1.ResetEatingFlag();
+            Assert.IsFalse(agent1.HasEatenThisCycle);
+            Assert.IsTrue(agent2.HasEatenThisCycle);
+        }
+
+        [Test]
+        public void EatingFlag_PersistsThroughOtherStateChanges()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Child);
+            agent.MarkAsEaten();
+            
+            // Change other properties
+            agent.Position = new GridPos(5, 5);
+            agent.Profession = Profession.Miner;
+            agent.LifeStage = LifeStage.Adult;
+            agent.HitPoints = 8;
+            agent.AssignedHouseId = 2;
+            
+            // Eating flag should persist
+            Assert.IsTrue(agent.HasEatenThisCycle);
+            
+            // Reset should still work
+            agent.ResetEatingFlag();
+            Assert.IsFalse(agent.HasEatenThisCycle);
+        }
+
+        [Test]
+        public void EatingFlag_WorksForAllLifeStages()
+        {
+            var stages = new[] { LifeStage.Child, LifeStage.Adult, LifeStage.Elder };
+            
+            foreach (var stage in stages)
+            {
+                var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, stage);
+                Assert.IsFalse(agent.HasEatenThisCycle);
+                agent.MarkAsEaten();
+                Assert.IsTrue(agent.HasEatenThisCycle);
+                agent.ResetEatingFlag();
+                Assert.IsFalse(agent.HasEatenThisCycle);
+            }
+        }
+
+        [Test]
+        public void EatingFlag_WorksForAllProfessions()
+        {
+            var professions = new[]
+            {
+                Profession.Woodcutter,
+                Profession.Miner,
+                Profession.Hunter,
+                Profession.Farmer,
+                Profession.Builder,
+                Profession.Soldier
+            };
+            
+            foreach (var prof in professions)
+            {
+                var agent = new Agent(new GridPos(0, 0), prof, LifeStage.Adult);
+                Assert.IsFalse(agent.HasEatenThisCycle);
+                agent.MarkAsEaten();
+                Assert.IsTrue(agent.HasEatenThisCycle);
+                agent.ResetEatingFlag();
+                Assert.IsFalse(agent.HasEatenThisCycle);
+            }
+        }
+    }
 }

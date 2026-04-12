@@ -108,7 +108,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase I — Eating & starvation
 
-- [ ] **T-080** — Once per cycle eating requirement
+- [x] **T-080** — Once per cycle eating requirement
 - [ ] **T-081** — Eat: travel to central, 1 second eat, consume 1 Meat or Plant food
 - [ ] **T-082** — No food: −25% productivity additive per failed cycle; death at 0%
 
@@ -986,3 +986,5 @@ Meat); ignores non-resource buildings. Added 13 comprehensive NUnit tests in `Fa
 - 2026-04-12 | T-071, T-072, T-073 | **Implemented productivity and carry capacity system.** T-071: Added `GetProductivityMultiplier()` method returns base by stage (Adult 1.0, Child/Elder 0.5). T-072: Added `AssignedHouseId` (nullable int), `IsHouseAssigned` property, `HouseAssignmentBonus = 0.2f` constant. Productivity with house: Child 0.7, Adult 1.2, Elder 0.7. T-073: Added `GetCarryCapacity()` method = `10  productivity_multiplier`. Base: Child/Elder 5, Adult 10. With house: Child/Elder 7, Adult 12. Added 21 comprehensive tests in `AgentProductivityTests` and `AgentCarryCapacityTests` covering all stages, house assignment, capacity scaling. Verification: carry capacity correctly scales with productivity. Files: `Agent.cs` (extended), `AgentTests.cs` (extended).
 
 Death), multi-agent independent counters, death handling. Verification: agents age correctly through all stages. Files: `AgingSystem.cs`, `AgingSystemTests.cs`.
+
+- 2026-04-12 | T-080 | **Implemented Once Per Cycle Eating Requirement.** Added `bool HasEatenThisCycle` property to `Agent` class (initialized to false). Added `MarkAsEaten()` method to set flag when agent eats, and `ResetEatingFlag()` method to reset at start of new cycle. Added 8 comprehensive NUnit tests in `AgentEatingTests.cs` covering: initialization (flag false), marking eaten (flag true), resetting flag, cycle progression (eat, reset, eat again), independent flags for multiple agents, persistence through other state changes, all life stages, all professions. Verification: agent eats at most once per cycle (flag prevents multiple eats in same cycle). Tests use standard NUnit assertions. Files: `Agent.cs` (extended), `AgentTests.cs` (extended with new test class).
