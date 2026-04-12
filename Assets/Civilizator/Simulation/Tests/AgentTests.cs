@@ -258,7 +258,166 @@ namespace Civilizator.Simulation.Tests
     }
 
     [TestFixture]
-    public class AgentSpawningTests
+    public class AgentProductivityTests
+    {
+        [Test]
+        public void GetProductivityMultiplier_Child_NoHouse_Returns0_5()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Child);
+            Assert.AreEqual(0.5f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void GetProductivityMultiplier_Adult_NoHouse_Returns1()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            Assert.AreEqual(1.0f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void GetProductivityMultiplier_Elder_NoHouse_Returns0_5()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Elder);
+            Assert.AreEqual(0.5f, agent.GetProductivityMultiplier());
+        }
+
+        [Test]
+        public void GetProductivityMultiplier_Child_WithHouse_Returns0_7()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Child);
+            agent.AssignedHouseId = 1;
+            Assert.AreEqual(0.5f + Agent.HouseAssignmentBonus, agent.GetProductivityMultiplier(), 0.0001f);
+            Assert.AreEqual(0.7f, agent.GetProductivityMultiplier(), 0.0001f);
+        }
+
+        [Test]
+        public void GetProductivityMultiplier_Adult_WithHouse_Returns1_2()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            agent.AssignedHouseId = 1;
+            Assert.AreEqual(1.0f + Agent.HouseAssignmentBonus, agent.GetProductivityMultiplier(), 0.0001f);
+            Assert.AreEqual(1.2f, agent.GetProductivityMultiplier(), 0.0001f);
+        }
+
+        [Test]
+        public void GetProductivityMultiplier_Elder_WithHouse_Returns0_7()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Elder);
+            agent.AssignedHouseId = 1;
+            Assert.AreEqual(0.5f + Agent.HouseAssignmentBonus, agent.GetProductivityMultiplier(), 0.0001f);
+            Assert.AreEqual(0.7f, agent.GetProductivityMultiplier(), 0.0001f);
+        }
+
+        [Test]
+        public void HouseAssignmentBonus_Is0_2()
+        {
+            Assert.AreEqual(0.2f, Agent.HouseAssignmentBonus);
+        }
+
+        [Test]
+        public void IsHouseAssigned_WithNullId_ReturnsFalse()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            Assert.IsNull(agent.AssignedHouseId);
+            Assert.IsFalse(agent.IsHouseAssigned);
+        }
+
+        [Test]
+        public void IsHouseAssigned_WithValidId_ReturnsTrue()
+        {
+            var agent = new Agent(new GridPos(0, 0));
+            agent.AssignedHouseId = 5;
+            Assert.IsTrue(agent.IsHouseAssigned);
+        }
+    }
+
+    [TestFixture]
+    public class AgentCarryCapacityTests
+    {
+        [Test]
+        public void BaseCarryCapacity_Is10()
+        {
+            Assert.AreEqual(10, Agent.BaseCarryCapacity);
+        }
+
+        [Test]
+        public void GetCarryCapacity_Child_NoHouse_Returns5()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Child);
+            Assert.AreEqual(5, agent.GetCarryCapacity());
+        }
+
+        [Test]
+        public void GetCarryCapacity_Adult_NoHouse_Returns10()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            Assert.AreEqual(10, agent.GetCarryCapacity());
+        }
+
+        [Test]
+        public void GetCarryCapacity_Elder_NoHouse_Returns5()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Elder);
+            Assert.AreEqual(5, agent.GetCarryCapacity());
+        }
+
+        [Test]
+        public void GetCarryCapacity_Child_WithHouse_Returns7()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Child);
+            agent.AssignedHouseId = 1;
+            // 0.7 * 10 = 7
+            Assert.AreEqual(7, agent.GetCarryCapacity());
+        }
+
+        [Test]
+        public void GetCarryCapacity_Adult_WithHouse_Returns12()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            agent.AssignedHouseId = 1;
+            // 1.2 * 10 = 12
+            Assert.AreEqual(12, agent.GetCarryCapacity());
+        }
+
+        [Test]
+        public void GetCarryCapacity_Elder_WithHouse_Returns7()
+        {
+            var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Elder);
+            agent.AssignedHouseId = 1;
+            // 0.7 * 10 = 7
+            Assert.AreEqual(7, agent.GetCarryCapacity());
+        }
+
+        [Test]
+        public void GetCarryCapacity_ScalesWithProductivityMultiplier()
+        {
+            var childNoHouse = new Agent(new GridPos(0, 0), Profession.Hunter, LifeStage.Child);
+            var childWithHouse = new Agent(new GridPos(0, 0), Profession.Hunter, LifeStage.Child);
+            childWithHouse.AssignedHouseId = 1;
+
+            int noHouseCapacity = childNoHouse.GetCarryCapacity();
+            int withHouseCapacity = childWithHouse.GetCarryCapacity();
+
+            Assert.IsTrue(withHouseCapacity > noHouseCapacity);
+            Assert.AreEqual(5, noHouseCapacity);
+            Assert.AreEqual(7, withHouseCapacity);
+        }
+
+        [Test]
+        public void GetCarryCapacity_MultipleAgents_CorrectByStage()
+        {
+            var agents = new[]
+            {
+                new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Child),
+                new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Adult),
+                new Agent(new GridPos(2, 0), Profession.Hunter, LifeStage.Elder)
+            };
+
+            Assert.AreEqual(5, agents[0].GetCarryCapacity()); // Child: 10 * 0.5
+            Assert.AreEqual(10, agents[1].GetCarryCapacity()); // Adult: 10 * 1.0
+            Assert.AreEqual(5, agents[2].GetCarryCapacity()); // Elder: 10 * 0.5
+        }
+    }
     {
         [Test]
         public void SpawnAgents_CreatesMultipleWithoutNullRefs()

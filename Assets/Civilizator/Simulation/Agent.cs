@@ -5,6 +5,7 @@ namespace Civilizator.Simulation
     /// <summary>
     /// Represents a person (citizen) in the simulation.
     /// Agents have position, profession, life stage, health points, and state tracking.
+    /// Agents can be assigned to houses, which provides a +20% productivity bonus.
     /// </summary>
     public class Agent
     {
@@ -12,6 +13,7 @@ namespace Civilizator.Simulation
         public Profession Profession { get; set; }
         public LifeStage LifeStage { get; set; }
         public int HitPoints { get; set; }
+        public int? AssignedHouseId { get; set; }
 
         /// <summary>
         /// Default hit points for newly spawned agents.
@@ -19,8 +21,21 @@ namespace Civilizator.Simulation
         public const int DefaultHitPoints = 10;
 
         /// <summary>
+        /// Productivity bonus (additive) when assigned to a house: +20%.
+        /// Stored as decimal (0.2f).
+        /// </summary>
+        public const float HouseAssignmentBonus = 0.2f;
+
+        /// <summary>
+        /// Base carry capacity per unit of productivity.
+        /// Total capacity = 10 × productivity_multiplier.
+        /// </summary>
+        public const int BaseCarryCapacity = 10;
+
+        /// <summary>
         /// Creates a new agent at the given position.
         /// Profession defaults to Woodcutter; life stage defaults to Child; HP defaults to 10.
+        /// House assignment defaults to null (unassigned).
         /// </summary>
         public Agent(GridPos position)
         {
@@ -28,6 +43,7 @@ namespace Civilizator.Simulation
             Profession = Profession.Woodcutter;
             LifeStage = LifeStage.Child;
             HitPoints = DefaultHitPoints;
+            AssignedHouseId = null;
         }
 
         /// <summary>
@@ -39,12 +55,40 @@ namespace Civilizator.Simulation
             Profession = profession;
             LifeStage = lifeStage;
             HitPoints = DefaultHitPoints;
+            AssignedHouseId = null;
         }
 
         /// <summary>
         /// Checks if this agent is alive (HP > 0).
         /// </summary>
         public bool IsAlive => HitPoints > 0;
+
+        /// <summary>
+        /// Checks if this agent is assigned to a house.
+        /// </summary>
+        public bool IsHouseAssigned => AssignedHouseId.HasValue;
+
+        /// <summary>
+        /// Gets the total productivity multiplier for this agent.
+        /// Base multiplier by life stage + house assignment bonus (if assigned).
+        /// </summary>
+        public float GetProductivityMultiplier()
+        {
+            float baseMultiplier = LifeStageHelpers.GetProductivityMultiplier(LifeStage);
+            if (IsHouseAssigned)
+                return baseMultiplier + HouseAssignmentBonus;
+            return baseMultiplier;
+        }
+
+        /// <summary>
+        /// Gets the carry capacity for this agent.
+        /// Capacity = 10 × productivity_multiplier.
+        /// </summary>
+        public int GetCarryCapacity()
+        {
+            float productivityMult = GetProductivityMultiplier();
+            return (int)(BaseCarryCapacity * productivityMult);
+        }
 
         public override string ToString()
         {
