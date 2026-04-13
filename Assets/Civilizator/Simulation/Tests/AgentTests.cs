@@ -417,8 +417,7 @@ namespace Civilizator.Simulation.Tests
             Assert.AreEqual(10, agents[1].GetCarryCapacity()); // Adult: 10 * 1.0
             Assert.AreEqual(5, agents[2].GetCarryCapacity()); // Elder: 10 * 0.5
         }
-    }
-    {
+
         [Test]
         public void SpawnAgents_CreatesMultipleWithoutNullRefs()
         {
@@ -953,7 +952,7 @@ namespace Civilizator.Simulation.Tests
             {
                 for (int y = 0; y < 100; y++)
                 {
-                    occupancy.RegisterOccupant(new GridPos(x, y));
+                    occupancy.BlockTile(new GridPos(x, y));
                 }
             }
             

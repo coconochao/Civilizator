@@ -21,7 +21,7 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_WithPlantationBase_Spawns1LogPerTilePer2x2_AfterCycleBoundary()
         {
             // Arrange: Create a base (non-upgraded) plantation at (0, 0)
-            var plantation = new Building(new GridPos(0, 0), BuildingKind.Plantation);
+            var plantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
             plantation.IsUnderConstruction = false;
             plantation.UpgradeLevel = 0;
 
@@ -57,7 +57,7 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_WithFarmBase_Spawns1PlantFoodPerTile()
         {
             // Arrange: Create a base farm at (5, 5)
-            var farm = new Building(new GridPos(5, 5), BuildingKind.Farm);
+            var farm = new Building(BuildingKind.Farm, new GridPos(5, 5));
             farm.IsUnderConstruction = false;
             farm.UpgradeLevel = 0;
 
@@ -77,7 +77,7 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_WithCattleFarmBase_Spawns1MeatPerTile()
         {
             // Arrange: Create a base cattle farm at (10, 10)
-            var farm = new Building(new GridPos(10, 10), BuildingKind.CattleFarm);
+            var farm = new Building(BuildingKind.CattleFarm, new GridPos(10, 10));
             farm.IsUnderConstruction = false;
             farm.UpgradeLevel = 0;
 
@@ -97,7 +97,7 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_WithUpgradedPlantation_Spawns2LogsPerTile()
         {
             // Arrange: Create an upgraded plantation
-            var plantation = new Building(new GridPos(0, 0), BuildingKind.Plantation);
+            var plantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
             plantation.IsUnderConstruction = false;
             plantation.UpgradeLevel = 1;
 
@@ -117,7 +117,7 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_DoesNotSpawnInUnderConstructionFacility()
         {
             // Arrange: Facility still under construction
-            var plantation = new Building(new GridPos(0, 0), BuildingKind.Plantation);
+            var plantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
             plantation.IsUnderConstruction = true;
             plantation.UpgradeLevel = 0;
 
@@ -138,9 +138,9 @@ namespace Civilizator.Simulation.Tests
             // Arrange: Create central and house buildings (non-spawning)
             var buildings = new List<Building>
             {
-                new Building(new GridPos(0, 0), BuildingKind.Central),
-                new Building(new GridPos(5, 5), BuildingKind.House),
-                new Building(new GridPos(10, 10), BuildingKind.Tower)
+                new Building(BuildingKind.Central, new GridPos(0, 0)),
+                new Building(BuildingKind.House, new GridPos(5, 5)),
+                new Building(BuildingKind.Tower, new GridPos(10, 10))
             };
             var existingSpawned = new List<SpawnedResource>();
 
@@ -156,7 +156,7 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_NoDuplicatesOnTile_NoUncollectedOnTile()
         {
             // Arrange: Plantation with one tile already occupied
-            var plantation = new Building(new GridPos(0, 0), BuildingKind.Plantation);
+            var plantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
             plantation.IsUnderConstruction = false;
             plantation.UpgradeLevel = 0;
 
@@ -180,7 +180,7 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_NoSpawnOnCollectedTile_ButSpawnsOnCollectedTile()
         {
             // Arrange: Plantation with one collected resource (should not block spawn)
-            var plantation = new Building(new GridPos(0, 0), BuildingKind.Plantation);
+            var plantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
             plantation.IsUnderConstruction = false;
             plantation.UpgradeLevel = 0;
 
@@ -202,7 +202,7 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_OnlySinceLastCycle()
         {
             // Arrange: Single plantation
-            var plantation = new Building(new GridPos(0, 0), BuildingKind.Plantation);
+            var plantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
             plantation.IsUnderConstruction = false;
             plantation.UpgradeLevel = 0;
 
@@ -230,11 +230,11 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_MultipleFacilities_AllSpawn()
         {
             // Arrange: Multiple facilities at different locations
-            var plantation = new Building(new GridPos(0, 0), BuildingKind.Plantation);
+            var plantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
             plantation.IsUnderConstruction = false;
             plantation.UpgradeLevel = 0;
 
-            var farm = new Building(new GridPos(5, 5), BuildingKind.Farm);
+            var farm = new Building(BuildingKind.Farm, new GridPos(5, 5));
             farm.IsUnderConstruction = false;
             farm.UpgradeLevel = 0;
 
@@ -255,11 +255,11 @@ namespace Civilizator.Simulation.Tests
         public void SpawnIfNewCycle_UpgradedFacility_SpawnsTwicePerTile()
         {
             // Arrange: Upgraded plantation at (0, 0) and base at (5, 5)
-            var upgradedPlantation = new Building(new GridPos(0, 0), BuildingKind.Plantation);
+            var upgradedPlantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
             upgradedPlantation.IsUnderConstruction = false;
             upgradedPlantation.UpgradeLevel = 1;
 
-            var basePlantation = new Building(new GridPos(5, 5), BuildingKind.Plantation);
+            var basePlantation = new Building(BuildingKind.Plantation, new GridPos(5, 5));
             basePlantation.IsUnderConstruction = false;
             basePlantation.UpgradeLevel = 0;
 

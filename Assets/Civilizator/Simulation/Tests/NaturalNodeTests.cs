@@ -236,8 +236,7 @@ namespace Civilizator.Simulation.Tests
             Assert.AreEqual(0, ore.Remaining);
             Assert.IsFalse(ore.IsGatherable(hasQuarrySupport: false));
         }
-    }
-    {
+
         [Test]
         public void GenerateNodes_Returns400Nodes()
         {

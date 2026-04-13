@@ -10,7 +10,7 @@ namespace Civilizator.Simulation.Tests
         public void IsNodeSupportedByQuarry_OreNodeOverlappingQuarry_ReturnsTrue()
         {
             // Arrange: Quarry at (0, 0) with 2×2 footprint covers (0,0), (1,0), (0,1), (1,1)
-            var quarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var quarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             quarry.IsUnderConstruction = false;
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(0, 0), 50);
             var quarries = new List<Building> { quarry };
@@ -26,7 +26,7 @@ namespace Civilizator.Simulation.Tests
         public void IsNodeSupportedByQuarry_OreNodeOverlappingQuarryEdge_ReturnsTrue()
         {
             // Arrange: Quarry at (5, 5) covers (5,5), (6,5), (5,6), (6,6)
-            var quarry = new Building(new GridPos(5, 5), BuildingKind.Quarry);
+            var quarry = new Building(BuildingKind.Quarry, new GridPos(5, 5));
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(6, 6), 50);
             var quarries = new List<Building> { quarry };
 
@@ -41,7 +41,7 @@ namespace Civilizator.Simulation.Tests
         public void IsNodeSupportedByQuarry_OreNodeNotOverlappingQuarry_ReturnsFalse()
         {
             // Arrange: Quarry at (0, 0), ore node at (2, 0) - no overlap
-            var quarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var quarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(2, 0), 50);
             var quarries = new List<Building> { quarry };
 
@@ -56,8 +56,8 @@ namespace Civilizator.Simulation.Tests
         public void IsNodeSupportedByQuarry_MultipleQuarries_FirstSupporting_ReturnsTrue()
         {
             // Arrange: Multiple quarries, second one supports the ore node
-            var quarry1 = new Building(new GridPos(0, 0), BuildingKind.Quarry);
-            var quarry2 = new Building(new GridPos(5, 5), BuildingKind.Quarry);
+            var quarry1 = new Building(BuildingKind.Quarry, new GridPos(0, 0));
+            var quarry2 = new Building(BuildingKind.Quarry, new GridPos(5, 5));
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(5, 5), 50);
             var quarries = new List<Building> { quarry1, quarry2 };
 
@@ -87,7 +87,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange: Node not depleted
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(0, 0), 50);
-            var quarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var quarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
 
             // Act
             float multiplier = QuarrySupport.GetOreGatheringRateMultiplier(oreNode, false, quarry);
@@ -114,7 +114,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange: Node depleted with base (non-upgraded) quarry support
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(0, 0), 0);
-            var baseQuarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var baseQuarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             baseQuarry.UpgradeLevel = 0;
 
             // Act
@@ -129,7 +129,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange: Node depleted with upgraded quarry support
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(0, 0), 0);
-            var upgradedQuarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var upgradedQuarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             upgradedQuarry.UpgradeLevel = 1;
 
             // Act
@@ -144,7 +144,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange: Node not depleted
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(0, 0), 50);
-            var quarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var quarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
 
             // Act
             float multiplier = QuarrySupport.GetOreGatheringTimeMultiplier(oreNode, false, quarry);
@@ -158,7 +158,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange: Node depleted with base quarry - should take 2× time
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(0, 0), 0);
-            var baseQuarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var baseQuarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             baseQuarry.UpgradeLevel = 0;
 
             // Act
@@ -173,7 +173,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange: Node depleted with upgraded quarry - normal time
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(0, 0), 0);
-            var upgradedQuarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var upgradedQuarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             upgradedQuarry.UpgradeLevel = 1;
 
             // Act
@@ -187,7 +187,7 @@ namespace Civilizator.Simulation.Tests
         public void FindSupportingQuarry_WithSupportingQuarry_ReturnsQuarry()
         {
             // Arrange: Quarry that overlaps ore node
-            var quarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var quarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(1, 1), 50);
             var quarries = new List<Building> { quarry };
 
@@ -202,7 +202,7 @@ namespace Civilizator.Simulation.Tests
         public void FindSupportingQuarry_NoSupportingQuarry_ReturnsNull()
         {
             // Arrange: Quarry that doesn't overlap ore node
-            var quarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var quarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(5, 5), 50);
             var quarries = new List<Building> { quarry };
 
@@ -217,8 +217,8 @@ namespace Civilizator.Simulation.Tests
         public void FindSupportingQuarry_MultipleQuarries_ReturnsFirst()
         {
             // Arrange: Multiple quarries that support ore node
-            var quarry1 = new Building(new GridPos(0, 0), BuildingKind.Quarry);
-            var quarry2 = new Building(new GridPos(1, 0), BuildingKind.Quarry);
+            var quarry1 = new Building(BuildingKind.Quarry, new GridPos(0, 0));
+            var quarry2 = new Building(BuildingKind.Quarry, new GridPos(1, 0));
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(1, 1), 50);
             var quarries = new List<Building> { quarry1, quarry2 };
 
@@ -234,9 +234,9 @@ namespace Civilizator.Simulation.Tests
         public void RateAndTimeMultipliers_AreReciprocals()
         {
             // Arrange: Various scenarios
-            var baseQuarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var baseQuarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             baseQuarry.UpgradeLevel = 0;
-            var upgradedQuarry = new Building(new GridPos(0, 0), BuildingKind.Quarry);
+            var upgradedQuarry = new Building(BuildingKind.Quarry, new GridPos(0, 0));
             upgradedQuarry.UpgradeLevel = 1;
             var oreNode = new NaturalNode(NaturalNodeType.Ore, new GridPos(0, 0), 0);
 

@@ -24,7 +24,7 @@ namespace Civilizator.Simulation
             if (oreNode.Type != NaturalNodeType.Ore)
                 throw new ArgumentException("Only ore nodes can be quarry-supported", nameof(oreNode));
 
-            return quarries.Any(q => BuildingFootprintContainsPosition(q.Position, oreNode.Position));
+            return quarries.Any(q => BuildingFootprintContainsPosition(q.Anchor, oreNode.Position));
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Civilizator.Simulation
             if (oreNode.Type != NaturalNodeType.Ore)
                 throw new ArgumentException("Only ore nodes can be quarry-supported", nameof(oreNode));
 
-            return quarries.FirstOrDefault(q => BuildingFootprintContainsPosition(q.Position, oreNode.Position));
+            return quarries.FirstOrDefault(q => BuildingFootprintContainsPosition(q.Anchor, oreNode.Position));
         }
 
         /// <summary>

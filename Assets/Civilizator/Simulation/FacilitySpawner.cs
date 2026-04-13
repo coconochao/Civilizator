@@ -54,7 +54,7 @@ namespace Civilizator.Simulation
                 int spawnAttempts = facility.UpgradeLevel > 0 ? 2 : 1;
 
                 // Spawn resources in the facility's 2×2 footprint
-                var footprintTiles = GetFootprintTiles(facility.Position);
+                var footprintTiles = GetFootprintTiles(facility.Anchor);
                 foreach (var tile in footprintTiles)
                 {
                     for (int attempt = 0; attempt < spawnAttempts; attempt++)
