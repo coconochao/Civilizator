@@ -166,6 +166,80 @@ namespace Civilizator.Simulation
         }
 
         /// <summary>
+        /// Fills house vacancies when adult/elder residents die.
+        /// For each house:
+        /// - Removes dead adult residents
+        /// - Assigns a random unassigned adult to fill each vacancy (up to 2 adult residents per house)
+        /// Agents must be Adult life stage, unassigned, and alive to fill vacancies.
+        /// </summary>
+        public void FillVacanciesFromDeaths(List<Agent> agents, List<Building> buildings)
+        {
+            if (agents == null || buildings == null)
+                return;
+
+            foreach (var house in buildings)
+            {
+                // Only process houses
+                if (house.Kind != BuildingKind.House)
+                    continue;
+
+                // Remove dead adult residents from the house
+                var deadResidentIds = new List<int>();
+                foreach (var residentId in house.AdultResidentIds)
+                {
+                    // Find the agent with this resident ID
+                    var resident = agents.FirstOrDefault(a => GetAgentId(a) == residentId);
+                    if (resident == null || !resident.IsAlive)
+                    {
+                        deadResidentIds.Add(residentId);
+                    }
+                }
+
+                // Remove dead residents and clear their house assignment
+                foreach (var deadId in deadResidentIds)
+                {
+                    house.RemoveAdultResident(deadId);
+                    
+                    // Find the agent and clear their house assignment
+                    var deadAgent = agents.FirstOrDefault(a => GetAgentId(a) == deadId);
+                    if (deadAgent != null)
+                    {
+                        deadAgent.AssignedHouseId = null;
+                    }
+                }
+
+                // Fill vacancies with random unassigned adults
+                while (house.AdultResidentIds.Count < 2)
+                {
+                    var unassignedAdults = agents
+                        .Where(a => a.LifeStage == LifeStage.Adult 
+                                 && !a.IsHouseAssigned 
+                                 && a.IsAlive)
+                        .ToList();
+
+                    if (unassignedAdults.Count == 0)
+                        break;
+
+                    // Pick a random unassigned adult
+                    int randomIndex = _rng.Next(0, unassignedAdults.Count);
+                    var chosenAdult = unassignedAdults[randomIndex];
+                    int agentId = GetAgentId(chosenAdult);
+
+                    // Assign to the house
+                    if (house.AssignAdultResident(agentId))
+                    {
+                        chosenAdult.AssignedHouseId = agentId;
+                    }
+                    else
+                    {
+                        // If assignment failed, break to avoid infinite loop
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Sets a new seed for the RNG to enable deterministic behavior in tests.
         /// </summary>
         public void SetSeed(int seed)

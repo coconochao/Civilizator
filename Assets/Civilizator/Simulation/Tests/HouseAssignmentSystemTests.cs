@@ -274,5 +274,310 @@ namespace Civilizator.Simulation.Tests
             Assert.AreEqual(2, house.AdultResidentIds.Count);
             Assert.IsFalse(house.AdultResidentIds.Contains(999), "Already assigned adult should not be reassigned");
         }
+
+        // ===== T-092: Fill Vacancy on Death Tests =====
+
+        [Test]
+        public void FillVacanciesFromDeaths_RemovesDeadResident()
+        {
+            // Create 4 adults: 2 for initial assignment, 2 unassigned for potential filling
+            var adult1 = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            var adult2 = new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Adult);
+            var adult3 = new Agent(new GridPos(2, 0), Profession.Hunter, LifeStage.Adult);
+            var adult4 = new Agent(new GridPos(3, 0), Profession.Farmer, LifeStage.Adult);
+            _agents.Add(adult1);
+            _agents.Add(adult2);
+            _agents.Add(adult3);
+            _agents.Add(adult4);
+
+            // Create house and complete it
+            var house = new Building(BuildingKind.House, new GridPos(5, 5));
+            house.IsUnderConstruction = true;
+            int requiredCost = BuildingCostHelper.GetBuildCost(BuildingKind.House);
+            house.ConstructionProgress = requiredCost;
+            _buildings.Add(house);
+
+            // Assign adults to completed house
+            _system.SetSeed(100);
+            _system.AssignAdultsToCompletedHouses(_agents, _buildings);
+            
+            int initialCount = house.AdultResidentIds.Count;
+            Assert.AreEqual(2, initialCount, "House should have 2 residents after initial assignment");
+
+            // Kill the first resident
+            adult1.HitPoints = 0;
+
+            // Fill vacancies
+            _system.FillVacanciesFromDeaths(_agents, _buildings);
+
+            // Adult1 should be removed from house
+            Assert.AreEqual(1, house.AdultResidentIds.Count, "House should have 1 resident after death");
+            Assert.IsNull(adult1.AssignedHouseId, "Dead agent should have house assignment cleared");
+        }
+
+        [Test]
+        public void FillVacanciesFromDeaths_FillsVacancyWithUnassignedAdult()
+        {
+            // Create 4 adults: 2 for initial assignment, 2 unassigned
+            var resident1 = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            var resident2 = new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Adult);
+            var unassigned1 = new Agent(new GridPos(2, 0), Profession.Hunter, LifeStage.Adult);
+            var unassigned2 = new Agent(new GridPos(3, 0), Profession.Farmer, LifeStage.Adult);
+            _agents.Add(resident1);
+            _agents.Add(resident2);
+            _agents.Add(unassigned1);
+            _agents.Add(unassigned2);
+
+            // Create house and complete it
+            var house = new Building(BuildingKind.House, new GridPos(5, 5));
+            house.IsUnderConstruction = true;
+            int requiredCost = BuildingCostHelper.GetBuildCost(BuildingKind.House);
+            house.ConstructionProgress = requiredCost;
+            _buildings.Add(house);
+
+            // Assign residents to house
+            _system.SetSeed(111);
+            _system.AssignAdultsToCompletedHouses(_agents, _buildings);
+
+            Assert.AreEqual(2, house.AdultResidentIds.Count, "House should start with 2 residents");
+
+            // Kill first resident
+            resident1.HitPoints = 0;
+
+            // Fill vacancies
+            _system.SetSeed(222);
+            _system.FillVacanciesFromDeaths(_agents, _buildings);
+
+            // House should be refilled to 2 adults
+            Assert.AreEqual(2, house.AdultResidentIds.Count, "House count should be restored after filling vacancy");
+            // One of the unassigned should now be assigned
+            Assert.IsTrue(unassigned1.IsHouseAssigned || unassigned2.IsHouseAssigned, 
+                "An unassigned adult should have been assigned to fill vacancy");
+        }
+
+        [Test]
+        public void FillVacanciesFromDeaths_NoUnassignedAdultsAvailable()
+        {
+            // Create 2 adults only
+            var adult1 = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            var adult2 = new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Adult);
+            _agents.Add(adult1);
+            _agents.Add(adult2);
+
+            // Create house and complete it
+            var house = new Building(BuildingKind.House, new GridPos(5, 5));
+            house.IsUnderConstruction = true;
+            int requiredCost = BuildingCostHelper.GetBuildCost(BuildingKind.House);
+            house.ConstructionProgress = requiredCost;
+            _buildings.Add(house);
+
+            // Assign both adults to house
+            _system.SetSeed(333);
+            _system.AssignAdultsToCompletedHouses(_agents, _buildings);
+
+            Assert.AreEqual(2, house.AdultResidentIds.Count);
+
+            // Kill one
+            adult1.HitPoints = 0;
+
+            // Fill vacancies (no unassigned adults available)
+            _system.FillVacanciesFromDeaths(_agents, _buildings);
+
+            // Vacancy should remain unfilled
+            Assert.AreEqual(1, house.AdultResidentIds.Count, "One adult should remain");
+        }
+
+        [Test]
+        public void FillVacanciesFromDeaths_IgnoresChildrenAndElders()
+        {
+            // Create 1 adult, 1 child, 1 elder for potential filling
+            var adult = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            var adult2 = new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Adult);
+            var child = new Agent(new GridPos(2, 0), Profession.Hunter, LifeStage.Child);
+            var elder = new Agent(new GridPos(3, 0), Profession.Farmer, LifeStage.Elder);
+            _agents.Add(adult);
+            _agents.Add(adult2);
+            _agents.Add(child);
+            _agents.Add(elder);
+
+            // Create house and complete it
+            var house = new Building(BuildingKind.House, new GridPos(5, 5));
+            house.IsUnderConstruction = true;
+            int requiredCost = BuildingCostHelper.GetBuildCost(BuildingKind.House);
+            house.ConstructionProgress = requiredCost;
+            _buildings.Add(house);
+
+            // Assign both adults to house
+            _system.SetSeed(444);
+            _system.AssignAdultsToCompletedHouses(_agents, _buildings);
+
+            // Kill first resident
+            adult.HitPoints = 0;
+
+            // Fill vacancies
+            _system.FillVacanciesFromDeaths(_agents, _buildings);
+
+            // House should be empty since no actual adults available (child and elder don't count)
+            Assert.AreEqual(1, house.AdultResidentIds.Count, "No other adults available to fill vacancy");
+        }
+
+        [Test]
+        public void FillVacanciesFromDeaths_IgnoresDeadUnassignedAdults()
+        {
+            // Create 4 adults: 2 assigned, 2 unassigned (1 dead)
+            var resident1 = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            var resident2 = new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Adult);
+            var deadUnassigned = new Agent(new GridPos(2, 0), Profession.Hunter, LifeStage.Adult);
+            var liveUnassigned = new Agent(new GridPos(3, 0), Profession.Farmer, LifeStage.Adult);
+            deadUnassigned.HitPoints = 0; // Already dead
+            _agents.Add(resident1);
+            _agents.Add(resident2);
+            _agents.Add(deadUnassigned);
+            _agents.Add(liveUnassigned);
+
+            // Create house and complete it
+            var house = new Building(BuildingKind.House, new GridPos(5, 5));
+            house.IsUnderConstruction = true;
+            int requiredCost = BuildingCostHelper.GetBuildCost(BuildingKind.House);
+            house.ConstructionProgress = requiredCost;
+            _buildings.Add(house);
+
+            // Assign residents to house
+            _system.SetSeed(555);
+            _system.AssignAdultsToCompletedHouses(_agents, _buildings);
+
+            // Kill one resident
+            resident1.HitPoints = 0;
+
+            // Fill vacancies
+            _system.SetSeed(666);
+            _system.FillVacanciesFromDeaths(_agents, _buildings);
+
+            // House should be refilled with the live unassigned adult
+            Assert.AreEqual(2, house.AdultResidentIds.Count, "Only living adults can fill vacancies");
+            Assert.IsTrue(liveUnassigned.IsHouseAssigned, "Live unassigned should be assigned");
+            Assert.IsFalse(deadUnassigned.IsHouseAssigned, "Dead adult should not be assigned");
+        }
+
+        [Test]
+        public void FillVacanciesFromDeaths_HandlesMultipleHouses()
+        {
+            // Create 8 adults
+            var adults = new List<Agent>();
+            for (int i = 0; i < 8; i++)
+            {
+                var agent = new Agent(new GridPos(i, 0), Profession.Woodcutter, LifeStage.Adult);
+                _agents.Add(agent);
+                adults.Add(agent);
+            }
+
+            // Create 2 houses and complete them
+            var house1 = new Building(BuildingKind.House, new GridPos(0, 5));
+            var house2 = new Building(BuildingKind.House, new GridPos(10, 5));
+            house1.IsUnderConstruction = true;
+            house2.IsUnderConstruction = true;
+            int requiredCost = BuildingCostHelper.GetBuildCost(BuildingKind.House);
+            house1.ConstructionProgress = requiredCost;
+            house2.ConstructionProgress = requiredCost;
+            _buildings.Add(house1);
+            _buildings.Add(house2);
+
+            // Assign adults to both houses
+            _system.SetSeed(777);
+            _system.AssignAdultsToCompletedHouses(_agents, _buildings);
+
+            int house1Count = house1.AdultResidentIds.Count;
+            int house2Count = house2.AdultResidentIds.Count;
+
+            // Kill one resident from each house
+            adults[0].HitPoints = 0;
+            adults[2].HitPoints = 0;
+
+            // Fill vacancies
+            _system.SetSeed(888);
+            _system.FillVacanciesFromDeaths(_agents, _buildings);
+
+            // Both houses should be restored
+            Assert.AreEqual(house1Count, house1.AdultResidentIds.Count, "House1 should be restored to original count");
+            Assert.AreEqual(house2Count, house2.AdultResidentIds.Count, "House2 should be restored to original count");
+        }
+
+        [Test]
+        public void FillVacanciesFromDeaths_IgnoresNonHouseBuildings()
+        {
+            // Create adults and a non-house building
+            var adult1 = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
+            var adult2 = new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Adult);
+            _agents.Add(adult1);
+            _agents.Add(adult2);
+
+            // Create a plantation (not a house)
+            var plantation = new Building(BuildingKind.Plantation, new GridPos(3, 3));
+            _buildings.Add(plantation);
+
+            // Fill vacancies (should not process plantation)
+            _system.FillVacanciesFromDeaths(_agents, _buildings);
+
+            // No errors and agents unaffected
+            Assert.IsFalse(adult1.IsHouseAssigned);
+            Assert.IsFalse(adult2.IsHouseAssigned);
+        }
+
+        [Test]
+        public void FillVacanciesFromDeaths_DeterministicRNG()
+        {
+            // First run
+            var agents1 = new List<Agent>();
+            for (int i = 0; i < 5; i++)
+            {
+                var agent = new Agent(new GridPos(i, 0), Profession.Woodcutter, LifeStage.Adult);
+                agents1.Add(agent);
+            }
+
+            var house1 = new Building(BuildingKind.House, new GridPos(5, 5));
+            house1.IsUnderConstruction = true;
+            int requiredCost = BuildingCostHelper.GetBuildCost(BuildingKind.House);
+            house1.ConstructionProgress = requiredCost;
+            var buildings1 = new List<Building> { house1 };
+
+            var system1 = new HouseAssignmentSystem(seed: 999);
+            system1.AssignAdultsToCompletedHouses(agents1, buildings1);
+
+            // Kill first resident
+            agents1[0].HitPoints = 0;
+
+            system1.SetSeed(999);
+            system1.FillVacanciesFromDeaths(agents1, buildings1);
+
+            int count1 = house1.AdultResidentIds.Count;
+
+            // Second run with same seed
+            var agents2 = new List<Agent>();
+            for (int i = 0; i < 5; i++)
+            {
+                var agent = new Agent(new GridPos(i, 0), Profession.Woodcutter, LifeStage.Adult);
+                agents2.Add(agent);
+            }
+
+            var house2 = new Building(BuildingKind.House, new GridPos(5, 5));
+            house2.IsUnderConstruction = true;
+            house2.ConstructionProgress = requiredCost;
+            var buildings2 = new List<Building> { house2 };
+
+            var system2 = new HouseAssignmentSystem(seed: 999);
+            system2.AssignAdultsToCompletedHouses(agents2, buildings2);
+
+            // Kill first resident
+            agents2[0].HitPoints = 0;
+
+            system2.SetSeed(999);
+            system2.FillVacanciesFromDeaths(agents2, buildings2);
+
+            int count2 = house2.AdultResidentIds.Count;
+
+            // Both should have same count
+            Assert.AreEqual(count1, count2, "Same seed should produce same results");
+            Assert.AreEqual(2, count1, "House should be restored to 2 adults");
+        }
     }
 }

@@ -116,7 +116,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 - [x] **T-090** — House capacity: max 2 adults/elders, unlimited children
 - [x] **T-091** — On house complete: assign 2 random adults
-- [ ] **T-092** — On adult/elder death: fill vacancy with random adult
+- [X] **T-092** — On adult/elder death: fill vacancy with random adult
 - [ ] **T-093** — Child→Adult: assign to house with open adult slot
 
 ### Phase K — Reproduction
