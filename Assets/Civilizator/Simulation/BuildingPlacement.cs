@@ -1,8 +1,11 @@
 namespace Civilizator.Simulation
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// Represents a building instance in the world.
     /// A building occupies a footprint starting at an anchor position.
+    /// For houses, also tracks resident capacity (adults and children).
     /// </summary>
     public class Building
     {
@@ -33,6 +36,18 @@ namespace Civilizator.Simulation
         /// Can be null if only progress-based completion is used.
         /// </summary>
         public SimulationClock SimulationClock { get; set; }
+
+        /// <summary>
+        /// IDs of adult and elder agents assigned to this house.
+        /// Only used for houses; max capacity is 2.
+        /// </summary>
+        public List<int> AdultResidentIds { get; } = new List<int>();
+
+        /// <summary>
+        /// IDs of child agents assigned to this house.
+        /// Only used for houses; unlimited capacity.
+        /// </summary>
+        public List<int> ChildResidentIds { get; } = new List<int>();
 
         public Building(BuildingKind kind, GridPos anchor)
         {
@@ -183,6 +198,71 @@ namespace Civilizator.Simulation
                     result.Add(new GridPos(x, y));
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the current count of adult residents in this house.
+        /// Only meaningful for houses; other building types return 0.
+        /// </summary>
+        public int GetAdultCount() => AdultResidentIds.Count;
+
+        /// <summary>
+        /// Returns the current count of child residents in this house.
+        /// Only meaningful for houses; other building types return 0.
+        /// </summary>
+        public int GetChildCount() => ChildResidentIds.Count;
+
+        /// <summary>
+        /// Checks if this house has an available adult slot.
+        /// Returns true if adult count is less than 2; false otherwise.
+        /// Only meaningful for houses.
+        /// </summary>
+        public bool HasAvailableAdultSlot() => AdultResidentIds.Count < 2;
+
+        /// <summary>
+        /// Assigns an adult resident to this house.
+        /// Does nothing if the house is already at capacity (2 adults).
+        /// Returns true if assignment succeeded, false if house is full.
+        /// </summary>
+        public bool AssignAdultResident(int agentId)
+        {
+            if (!HasAvailableAdultSlot())
+                return false;
+
+            if (!AdultResidentIds.Contains(agentId))
+            {
+                AdultResidentIds.Add(agentId);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Removes an adult resident from this house.
+        /// </summary>
+        public void RemoveAdultResident(int agentId)
+        {
+            AdultResidentIds.Remove(agentId);
+        }
+
+        /// <summary>
+        /// Assigns a child resident to this house.
+        /// Returns true (children have unlimited capacity).
+        /// </summary>
+        public bool AssignChildResident(int agentId)
+        {
+            if (!ChildResidentIds.Contains(agentId))
+            {
+                ChildResidentIds.Add(agentId);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Removes a child resident from this house.
+        /// </summary>
+        public void RemoveChildResident(int agentId)
+        {
+            ChildResidentIds.Remove(agentId);
         }
     }
 

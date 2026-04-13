@@ -386,6 +386,135 @@ namespace Civilizator.Simulation.Tests
             clock.Advance(upgradeCost + 0.1f);
             Assert.IsTrue(building.IsConstructionPhaseComplete());
         }
+
+        // T-090 — House capacity tests
+
+        [Test]
+        public void HouseCapacity_InitiallyEmpty()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            Assert.AreEqual(0, house.GetAdultCount());
+            Assert.AreEqual(0, house.GetChildCount());
+            Assert.IsTrue(house.HasAvailableAdultSlot());
+        }
+
+        [Test]
+        public void HouseCapacity_CanAssignOneAdult()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            bool result = house.AssignAdultResident(1);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(1, house.GetAdultCount());
+            Assert.IsTrue(house.HasAvailableAdultSlot());
+        }
+
+        [Test]
+        public void HouseCapacity_CanAssignTwoAdults()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            bool result1 = house.AssignAdultResident(1);
+            bool result2 = house.AssignAdultResident(2);
+
+            Assert.IsTrue(result1);
+            Assert.IsTrue(result2);
+            Assert.AreEqual(2, house.GetAdultCount());
+            Assert.IsFalse(house.HasAvailableAdultSlot());
+        }
+
+        [Test]
+        public void HouseCapacity_CannotAssignThirdAdult()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            house.AssignAdultResident(1);
+            house.AssignAdultResident(2);
+            bool result3 = house.AssignAdultResident(3);
+
+            Assert.IsFalse(result3);
+            Assert.AreEqual(2, house.GetAdultCount());
+        }
+
+        [Test]
+        public void HouseCapacity_ChildrenUnlimited()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            // Assign multiple children without capacity limit
+            bool result1 = house.AssignChildResident(100);
+            bool result2 = house.AssignChildResident(101);
+            bool result3 = house.AssignChildResident(102);
+            bool result4 = house.AssignChildResident(103);
+
+            Assert.IsTrue(result1);
+            Assert.IsTrue(result2);
+            Assert.IsTrue(result3);
+            Assert.IsTrue(result4);
+            Assert.AreEqual(4, house.GetChildCount());
+        }
+
+        [Test]
+        public void HouseCapacity_CanRemoveAdult()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            house.AssignAdultResident(1);
+            house.AssignAdultResident(2);
+            Assert.IsFalse(house.HasAvailableAdultSlot());
+
+            house.RemoveAdultResident(2);
+
+            Assert.AreEqual(1, house.GetAdultCount());
+            Assert.IsTrue(house.HasAvailableAdultSlot());
+        }
+
+        [Test]
+        public void HouseCapacity_CanAssignAfterRemoval()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            house.AssignAdultResident(1);
+            house.AssignAdultResident(2);
+            house.RemoveAdultResident(1);
+
+            // Should now be able to assign a new adult
+            bool result = house.AssignAdultResident(3);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(2, house.GetAdultCount());
+            Assert.Contains(2, house.AdultResidentIds);
+            Assert.Contains(3, house.AdultResidentIds);
+        }
+
+        [Test]
+        public void HouseCapacity_CanRemoveChild()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            house.AssignChildResident(100);
+            house.AssignChildResident(101);
+            Assert.AreEqual(2, house.GetChildCount());
+
+            house.RemoveChildResident(100);
+
+            Assert.AreEqual(1, house.GetChildCount());
+            Assert.Contains(101, house.ChildResidentIds);
+        }
+
+        [Test]
+        public void HouseCapacity_IgnoresDuplicateAssignments()
+        {
+            var house = new Building(BuildingKind.House, new GridPos(0, 0));
+
+            house.AssignAdultResident(1);
+            house.AssignAdultResident(1); // Duplicate
+            
+            Assert.AreEqual(1, house.GetAdultCount());
+            Assert.AreEqual(1, house.AdultResidentIds.Count);
+        }
     }
 
     [TestFixture]
