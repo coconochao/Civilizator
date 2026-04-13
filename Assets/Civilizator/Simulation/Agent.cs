@@ -108,10 +108,12 @@ namespace Civilizator.Simulation
 
         /// <summary>
         /// Marks this agent as having eaten during the current cycle.
+        /// Also clears any accumulated starvation penalty from previous failed cycles.
         /// </summary>
         public void MarkAsEaten()
         {
             HasEatenThisCycle = true;
+            EatingState.ResetStarvationPenalty();
         }
 
         /// <summary>

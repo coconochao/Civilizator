@@ -110,7 +110,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 - [x] **T-080** — Once per cycle eating requirement
 - [x] **T-081** — Eat: travel to central, 1 second eat, consume 1 Meat and 1 Plant food
-- [ ] **T-082** — No food: −25% productivity additive per failed cycle; death at 0%
+- [x] **T-082** — No food: −25% productivity additive per failed cycle; death at 0%
 
 ### Phase J — Housing
 
@@ -978,6 +978,9 @@ Format: `YYYY-MM-DD | T-xxx | note`
 Meat); ignores non-resource buildings. Added 13 comprehensive NUnit tests in `FacilitySpawningTests.cs` covering: base 1-per-tile spawn (Plantation, Farm, CattleFarm), upgraded 2-per-tile spawn, 22 footprint correctness, under-construction exclusion, non-facility buildings ignored, duplicate prevention (uncollected blocks, collected allows), cycle-once enforcement, multiple facilities, high-level resource kind validation. Verification: "After 1 cycle, at most 4 items for 22 base rate  (tests validate exactly 4 spawned resources per base facility per cycle). Files: `SpawnedResource.cs` + .meta, `FacilitySpawner.cs` + .meta, `FacilitySpawningTests.cs` + .meta.1" 
 
 - 2026-04-12 | T-061, T-062 | **T-061 already complete (verified).** Upgraded facilities (Plantation/Farm/CattleFarm) double spawn rate via `UpgradeLevel > 0 ? 2 : 1` spawn attempts in `FacilitySpawner.cs`. Tests verify: upgraded spawns 8 logs per cycle (2 per tile  4 tiles) vs base 4 logs. **T-062: Implemented `QuarrySupport` static helper class** to manage quarry-enabled ore gathering. Core rules: quarry overlaps Ore nodes; enables indefinite collection past depletion; base quarry = half speed (2 gathering time), upgraded = normal speed (1). Added methods: `IsNodeSupportedByQuarry(node, quarries)` (checks footprint overlap), `GetOreGatheringRateMultiplier/TimeMultiplier(node, isDepletedPastZero, quarry)` (returns 0.5/2.0 for base, 1.0/1.0 for upgraded), `FindSupportingQuarry(node, quarries)`. Added 16 NUnit tests in `QuarrySupportTests.cs`: footprint overlap edge cases, multiple quarries, rate/time multiplier reciprocals, base vs upgraded quarry behavior, depletion scenarios. Verification: timed simulation can use multipliers during agent gathering phase (T-130+). Files: `QuarrySupport.cs`, `QuarrySupportTests.cs`, `PLAN.md` (marked T-061/T-062 done).
+
+- 2026-04-13 | T-082 | Added starvation penalty handling to `EatingAction`: failed eat applies -25% productivity penalty and zeros HP at 100% penalty; successful eat resets penalties. Added integration tests in `AgentTests.cs` for starvation penalty application and death after four failed cycles.
+
 
 - 2026-04-12 | T-063 | **Implemented node depletion rules with quarry exception.** Added `IsGatherable(bool hasQuarrySupport)` method to `NaturalNode`: normal nodes (Tree/Plant/Animal) gatherable only if remaining > 0; ore without quarry gatherable only if remaining > 0; ore with quarry always gatherable (indefinite collection past depletion). Added 12 comprehensive NUnit test methods in `NaturalNodeGatherabilityTests` covering: normal node gatherability by type, depletion-gating, quarry-enabled ore indefinite collection, no quarry support for non-ore nodes, depletion sequence validation. Verification: depleted nodes at 0 remaining not gatherable unless quarry-supported ore. Files: `NaturalNode.cs` (modified), `NaturalNodeTests.cs` (extended).
 

@@ -77,8 +77,32 @@ namespace Civilizator.Simulation
                 if (PathToCenter.Count == 0)
                 {
                     // No path found; action fails
-                    IsComplete = true;
-                    WasSuccessful = false;
+                    CompleteEating(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Completes the eating action and applies starvation effects if needed.
+        /// </summary>
+        private void CompleteEating(bool success)
+        {
+            if (IsComplete)
+                return;
+
+            IsComplete = true;
+            WasSuccessful = success;
+
+            if (success)
+            {
+                Agent.MarkAsEaten();
+            }
+            else
+            {
+                Agent.EatingState.ApplyStarvationPenalty();
+                if (Agent.EatingState.IsDeadFromStarvation)
+                {
+                    Agent.HitPoints = 0;
                 }
             }
         }
@@ -126,8 +150,7 @@ namespace Civilizator.Simulation
             {
                 // Eating complete; attempt to consume food
                 bool foodConsumed = TryConsumeFood(storage);
-                IsComplete = true;
-                WasSuccessful = foodConsumed;
+                CompleteEating(foodConsumed);
             }
         }
 

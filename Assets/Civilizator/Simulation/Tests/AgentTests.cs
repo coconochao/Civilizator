@@ -876,6 +876,44 @@ namespace Civilizator.Simulation.Tests
         }
 
         [Test]
+        public void EatingAction_FailureAppliesStarvationPenalty()
+        {
+            var center = new GridPos(50, 50);
+            var agent = new Agent(center);
+            var action = new EatingAction(agent, center);
+            var storage = new CentralStorage(); // Empty storage
+            var occupancy = new GridOccupancy();
+            action.InitializePath(occupancy);
+            
+            action.Update(1.5f, storage);
+            
+            Assert.IsTrue(action.IsComplete);
+            Assert.IsFalse(action.WasSuccessful);
+            Assert.AreEqual(0.25f, agent.EatingState.StarvationPenalty);
+            Assert.IsTrue(agent.IsAlive);
+        }
+
+        [Test]
+        public void EatingAction_DeathOccursAfterFourFailedEats()
+        {
+            var center = new GridPos(50, 50);
+            var agent = new Agent(center);
+            var occupancy = new GridOccupancy();
+
+            for (int i = 0; i < 4; i++)
+            {
+                var action = new EatingAction(agent, center);
+                var storage = new CentralStorage(); // Empty storage
+                action.InitializePath(occupancy);
+                action.Update(1.5f, storage);
+            }
+
+            Assert.AreEqual(1.0f, agent.EatingState.StarvationPenalty);
+            Assert.IsFalse(agent.IsAlive);
+            Assert.AreEqual(0, agent.HitPoints);
+        }
+
+        [Test]
         public void EatingAction_RequiresFullSecond()
         {
             var center = new GridPos(50, 50);
