@@ -1,8 +1,9 @@
 {
     "name": "Tests",
-    "rootNamespace": "Civilizator.Simulation.Tests",
+    "rootNamespace": "Civilizator.Tests",
     "references": [
         "Civilizator.Simulation",
+        "Civilizator.Presentation",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "nunit.framework"
