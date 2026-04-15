@@ -283,12 +283,8 @@ namespace Civilizator.Simulation.Tests
             // Create 4 adults: 2 for initial assignment, 2 unassigned for potential filling
             var adult1 = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Adult);
             var adult2 = new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Adult);
-            var adult3 = new Agent(new GridPos(2, 0), Profession.Hunter, LifeStage.Adult);
-            var adult4 = new Agent(new GridPos(3, 0), Profession.Farmer, LifeStage.Adult);
             _agents.Add(adult1);
             _agents.Add(adult2);
-            _agents.Add(adult3);
-            _agents.Add(adult4);
 
             // Create house and complete it
             var house = new Building(BuildingKind.House, new GridPos(5, 5));

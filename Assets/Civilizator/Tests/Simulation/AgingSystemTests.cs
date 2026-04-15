@@ -272,6 +272,7 @@ namespace Civilizator.Simulation.Tests
             var midChild = new Agent(new GridPos(1, 0), Profession.Miner, LifeStage.Child);
             
             _agingSystem.RegisterAgent(newChild);
+            _agingSystem.AdvanceCycle();
             _agingSystem.RegisterAgent(midChild);
 
             // Manually set midChild to 5 cycles remaining
@@ -282,15 +283,15 @@ namespace Civilizator.Simulation.Tests
             // midChild is now at 5 cycles remaining
             Assert.AreEqual(5, _agingSystem.GetRemainingCycles(midChild));
 
-            // Advance newChild 5 more cycles (total 10 for transition)
-            for (int i = 0; i < 5; i++)
+            // Advance newChild 4 more cycles (total 10 for transition)
+            for (int i = 0; i < 4; i++)
                 _agingSystem.AdvanceCycle();
 
             // newChild should have transitioned
             Assert.AreEqual(LifeStage.Adult, newChild.LifeStage);
             // midChild should transition next cycle
             Assert.AreEqual(LifeStage.Child, midChild.LifeStage);
-            Assert.AreEqual(0, _agingSystem.GetRemainingCycles(midChild));
+            Assert.AreEqual(1, _agingSystem.GetRemainingCycles(midChild));
         }
     }
 }

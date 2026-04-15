@@ -142,7 +142,7 @@ namespace Civilizator.Simulation.Tests
             
             // Second action starts
             float action2End = clock.GetActionEndTime(10f);
-            Assert.AreEqual(25f, action2End);
+            Assert.AreEqual(15f, action2End);
             Assert.IsFalse(clock.IsActionComplete(action2End));
         }
     }

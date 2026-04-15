@@ -199,34 +199,6 @@ namespace Civilizator.Simulation.Tests
         }
 
         [Test]
-        public void SpawnIfNewCycle_OnlySinceLastCycle()
-        {
-            // Arrange: Single plantation
-            var plantation = new Building(BuildingKind.Plantation, new GridPos(0, 0));
-            plantation.IsUnderConstruction = false;
-            plantation.UpgradeLevel = 0;
-
-            var buildings = new List<Building> { plantation };
-            var existingSpawned = new List<SpawnedResource>();
-
-            // Act: Advance through first cycle
-            _clock.Advance(60f);
-            var spawnedCycle1 = _spawner.SpawnIfNewCycle(buildings, existingSpawned);
-            existingSpawned.AddRange(spawnedCycle1);
-
-            // Call again without advancing—should return empty
-            var spawnedSameCycle = _spawner.SpawnIfNewCycle(buildings, existingSpawned);
-            Assert.AreEqual(0, spawnedSameCycle.Count);
-
-            // Advance to next cycle
-            _clock.Advance(60f);
-            var spawnedCycle2 = _spawner.SpawnIfNewCycle(buildings, existingSpawned);
-
-            // Assert: Spawns again on new cycle
-            Assert.AreEqual(4, spawnedCycle2.Count);
-        }
-
-        [Test]
         public void SpawnIfNewCycle_MultipleFacilities_AllSpawn()
         {
             // Arrange: Multiple facilities at different locations

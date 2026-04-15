@@ -20,7 +20,7 @@ namespace Civilizator.Simulation
     public class FacilitySpawner
     {
         private readonly SimulationClock _clock;
-        private int _lastSpawnCycle = -1;
+        private int _lastSpawnCycle = 0;
 
         public FacilitySpawner(SimulationClock clock)
         {

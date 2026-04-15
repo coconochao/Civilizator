@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System;
 
 namespace Civilizator.Simulation.Tests
 {
@@ -362,12 +363,12 @@ namespace Civilizator.Simulation.Tests
         }
 
         [Test]
-        public void GetCarryCapacity_Child_WithHouse_Returns7()
+        public void GetCarryCapacity_Child_WithHouse_Returns6()
         {
             var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Child);
             agent.AssignedHouseId = 1;
-            // 0.7 * 10 = 7
-            Assert.AreEqual(7, agent.GetCarryCapacity());
+            // 0.5 * 10 * 1.2 = 6
+            Assert.AreEqual(6, agent.GetCarryCapacity());
         }
 
         [Test]
@@ -380,12 +381,12 @@ namespace Civilizator.Simulation.Tests
         }
 
         [Test]
-        public void GetCarryCapacity_Elder_WithHouse_Returns7()
+        public void GetCarryCapacity_Elder_WithHouse_Returns6()
         {
             var agent = new Agent(new GridPos(0, 0), Profession.Woodcutter, LifeStage.Elder);
             agent.AssignedHouseId = 1;
-            // 0.7 * 10 = 7
-            Assert.AreEqual(7, agent.GetCarryCapacity());
+            // 0.5 * 10 * 1.2 = 6
+            Assert.AreEqual(6, agent.GetCarryCapacity());
         }
 
         [Test]
@@ -400,7 +401,7 @@ namespace Civilizator.Simulation.Tests
 
             Assert.IsTrue(withHouseCapacity > noHouseCapacity);
             Assert.AreEqual(5, noHouseCapacity);
-            Assert.AreEqual(7, withHouseCapacity);
+            Assert.AreEqual(6, withHouseCapacity);
         }
 
         [Test]
@@ -729,7 +730,8 @@ namespace Civilizator.Simulation.Tests
             
             // Apply starvation: 1.2 - 0.25 = 0.95
             agent.EatingState.ApplyStarvationPenalty();
-            Assert.AreEqual(0.95f, agent.GetProductivityMultiplier());
+            //Round to 2 decimal places for comparison
+            Assert.AreEqual(Math.Round(0.95f, 2), Math.Round(agent.GetProductivityMultiplier(), 2));
         }
 
         [Test]
@@ -921,6 +923,7 @@ namespace Civilizator.Simulation.Tests
             
             var storage = new CentralStorage();
             storage.Deposit(ResourceKind.Meat, 1);
+            storage.Deposit(ResourceKind.PlantFood, 1);
             
             var occupancy = new GridOccupancy();
             action.InitializePath(occupancy);

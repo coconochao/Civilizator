@@ -23,7 +23,7 @@ namespace Civilizator.Presentation.Tests
         [TearDown]
         public void Teardown()
         {
-            Object.Destroy(gameObject);
+            Object.DestroyImmediate(gameObject);
         }
 
         [Test]

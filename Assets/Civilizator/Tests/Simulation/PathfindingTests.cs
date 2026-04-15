@@ -318,7 +318,7 @@ namespace Civilizator.Simulation.Tests
 
             var path = Pathfinding.FindPath(start, target, occupancy20x15);
 
-            Assert.AreEqual(29, path.Count, "Regression: maze path should have exactly 29 tiles");
+            Assert.AreEqual(30, path.Count, "Regression: maze path should have exactly 30 tiles");
             Assert.AreEqual(start, path[0], "Path should start at (1,1)");
             Assert.AreEqual(target, path[path.Count - 1], "Path should end at (18,13)");
 

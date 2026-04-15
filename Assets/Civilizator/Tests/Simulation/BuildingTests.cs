@@ -281,6 +281,7 @@ namespace Civilizator.Simulation.Tests
             var building = new Building(BuildingKind.House, new GridPos(0, 0));
             building.SimulationClock = clock;
             building.IsUnderConstruction = true;
+            building.ConstructionProgress = building.GetRequiredConstructionAmount() - 10; // Set progress so that 10 units completes it
 
             // Deliver 10 units with adult productivity
             building.DeliverBuildResources(10, productivityMultiplier: 1f);
@@ -298,7 +299,7 @@ namespace Civilizator.Simulation.Tests
             var building = new Building(BuildingKind.House, new GridPos(0, 0));
             building.SimulationClock = clock;
             building.IsUnderConstruction = true;
-
+            building.ConstructionProgress = building.GetRequiredConstructionAmount() - 10; // Set progress so that 10 units completes it
             // Deliver 10 units with child productivity
             building.DeliverBuildResources(10, productivityMultiplier: 0.5f);
 

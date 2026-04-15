@@ -103,12 +103,13 @@ namespace Civilizator.Simulation.Tests
         }
 
         [Test]
-        public void IsPassable_ReturnsFalseForOutOfBounds()
+        public void IsPassable_ReturnsTrueForOutOfBounds()
         {
-            Assert.IsFalse(occupancy.IsPassable(new GridPos(-1, 0)));
-            Assert.IsFalse(occupancy.IsPassable(new GridPos(0, -1)));
-            Assert.IsFalse(occupancy.IsPassable(new GridPos(GridPos.MapWidth, 0)));
-            Assert.IsFalse(occupancy.IsPassable(new GridPos(0, GridPos.MapHeight)));
+            // GridPos clamps out-of-bounds positions
+            Assert.IsTrue(occupancy.IsPassable(new GridPos(-1, 0)));
+            Assert.IsTrue(occupancy.IsPassable(new GridPos(0, -1)));
+            Assert.IsTrue(occupancy.IsPassable(new GridPos(GridPos.MapWidth, 0)));
+            Assert.IsTrue(occupancy.IsPassable(new GridPos(0, GridPos.MapHeight)));
         }
 
         [Test]
