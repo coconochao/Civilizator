@@ -240,6 +240,48 @@ namespace Civilizator.Simulation
         }
 
         /// <summary>
+        /// Assigns a newly adult agent (Child→Adult transition) to an available house.
+        /// Searches for houses with open adult slots (less than 2 adult residents).
+        /// If available, randomly selects one house and assigns the agent.
+        /// If no houses have open slots, the agent remains unassigned.
+        /// 
+        /// This method is intended to be called when an agent's life stage changes from Child to Adult.
+        /// </summary>
+        /// <param name="agent">The agent that just became an Adult. Must be Adult life stage.</param>
+        /// <param name="buildings">List of buildings to search for available houses.</param>
+        /// <returns>True if the agent was successfully assigned to a house; false otherwise.</returns>
+        public bool AssignNewAdultToHouse(Agent agent, List<Building> buildings)
+        {
+            if (agent == null || buildings == null)
+                return false;
+
+            if (agent.LifeStage != LifeStage.Adult)
+                return false;
+
+            // Find houses with open adult slots (less than 2 adult residents)
+            var availableHouses = buildings
+                .Where(b => b.Kind == BuildingKind.House && b.AdultResidentIds.Count < 2)
+                .ToList();
+
+            if (availableHouses.Count == 0)
+                return false;
+
+            // Randomly select one house
+            int randomIndex = _rng.Next(0, availableHouses.Count);
+            var selectedHouse = availableHouses[randomIndex];
+
+            // Assign the agent to the selected house
+            int agentId = GetAgentId(agent);
+            if (selectedHouse.AssignAdultResident(agentId))
+            {
+                agent.AssignedHouseId = agentId;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Sets a new seed for the RNG to enable deterministic behavior in tests.
         /// </summary>
         public void SetSeed(int seed)
