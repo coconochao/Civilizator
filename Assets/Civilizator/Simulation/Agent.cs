@@ -9,6 +9,12 @@ namespace Civilizator.Simulation
     /// </summary>
     public class Agent
     {
+        /// <summary>
+        /// Unique identifier for this agent.
+        /// Assigned at creation and never changes.
+        /// </summary>
+        public int Id { get; }
+
         public GridPos Position { get; set; }
         public Profession Profession { get; set; }
         public LifeStage LifeStage { get; set; }
@@ -44,12 +50,27 @@ namespace Civilizator.Simulation
         public const int BaseCarryCapacity = 10;
 
         /// <summary>
-        /// Creates a new agent at the given position.
+        /// Creates a new agent at the given position with an automatically assigned ID.
         /// Profession defaults to Woodcutter; life stage defaults to Child; HP defaults to 10.
         /// House assignment defaults to null (unassigned).
         /// </summary>
         public Agent(GridPos position)
         {
+            Id = NextId++;
+            Position = position;
+            Profession = Profession.Woodcutter;
+            LifeStage = LifeStage.Child;
+            HitPoints = DefaultHitPoints;
+            AssignedHouseId = null;
+        }
+
+        /// <summary>
+        /// Creates a new agent with specified ID at the given position.
+        /// Profession defaults to Woodcutter; life stage defaults to Child; HP defaults to 10.
+        /// </summary>
+        public Agent(GridPos position, int id)
+        {
+            Id = id;
             Position = position;
             Profession = Profession.Woodcutter;
             LifeStage = LifeStage.Child;
@@ -62,6 +83,7 @@ namespace Civilizator.Simulation
         /// </summary>
         public Agent(GridPos position, Profession profession, LifeStage lifeStage)
         {
+            Id = NextId++;
             Position = position;
             Profession = profession;
             LifeStage = lifeStage;
@@ -125,9 +147,14 @@ namespace Civilizator.Simulation
             HasEatenThisCycle = false;
         }
 
+        /// <summary>
+        /// Counter for generating unique agent IDs.
+        /// </summary>
+        private static int NextId { get; set; } = 1;
+
         public override string ToString()
         {
-            return $"Agent({Profession} {LifeStage} at {Position}, HP={HitPoints})";
+            return $"Agent #{Id}({Profession} {LifeStage} at {Position}, HP={HitPoints})";
         }
     }
 

@@ -12,8 +12,6 @@ namespace Civilizator.Simulation
     public class HouseAssignmentSystem
     {
         private Random _rng;
-        private Dictionary<Agent, int> _agentIds = new Dictionary<Agent, int>();
-        private int _nextAgentId = 1;
 
         /// <summary>
         /// Creates a new HouseAssignmentSystem with a specified seed for deterministic behavior.
@@ -21,19 +19,6 @@ namespace Civilizator.Simulation
         public HouseAssignmentSystem(int seed = 0)
         {
             _rng = new Random(seed);
-        }
-
-        /// <summary>
-        /// Gets or creates a unique ID for an agent.
-        /// </summary>
-        private int GetAgentId(Agent agent)
-        {
-            if (!_agentIds.TryGetValue(agent, out int id))
-            {
-                id = _nextAgentId++;
-                _agentIds[agent] = id;
-            }
-            return id;
         }
 
         /// <summary>
@@ -80,20 +65,19 @@ namespace Civilizator.Simulation
                 // Determine how many adults to assign (min of 2 and available count)
                 int adultsToAssign = Math.Min(2, unassignedAdults.Count);
 
-                // Randomly shuffle the list and take the first N adults
-                ShuffleList(unassignedAdults);
-                
-                for (int i = 0; i < adultsToAssign; i++)
-                {
-                    var adult = unassignedAdults[i];
-                    int agentId = GetAgentId(adult);
-                    
-                    // Assign the adult to the house
-                    if (building.AssignAdultResident(agentId))
-                    {
-                        adult.AssignedHouseId = agentId;
-                    }
-                }
+                 // Randomly shuffle the list and take the first N adults
+                 ShuffleList(unassignedAdults);
+                 
+                 for (int i = 0; i < adultsToAssign; i++)
+                 {
+                     var adult = unassignedAdults[i];
+                     
+                     // Assign the adult to the house
+                     if (building.AssignAdultResident(adult.Id))
+                     {
+                         adult.AssignedHouseId = adult.Id;
+                     }
+                 }
             }
         }
 
@@ -118,9 +102,9 @@ namespace Civilizator.Simulation
             if (adultsToReturn == 0)
                 return new List<Agent>();
 
-            // Shuffle and return the requested number
-            ShuffleList(unassignedAdults);
-            return unassignedAdults.Take(adultsToReturn).ToList();
+             // Shuffle and return the requested number
+             ShuffleList(unassignedAdults);
+             return unassignedAdults.Take(adultsToReturn).ToList();
         }
 
         /// <summary>
@@ -134,19 +118,18 @@ namespace Civilizator.Simulation
             if (house.Kind != BuildingKind.House)
                 return;
 
-            foreach (var agent in agentsToAssign)
-            {
-                if (agent == null || agent.LifeStage != LifeStage.Adult)
-                    continue;
+             foreach (var agent in agentsToAssign)
+             {
+                 if (agent == null || agent.LifeStage != LifeStage.Adult)
+                     continue;
 
-                int agentId = GetAgentId(agent);
-                // Try to assign to the house
-                if (house.AssignAdultResident(agentId))
-                {
-                    // Update agent's house assignment
-                    agent.AssignedHouseId = agentId;
-                }
-            }
+                 // Try to assign to the house
+                 if (house.AssignAdultResident(agent.Id))
+                 {
+                     // Update agent's house assignment
+                     agent.AssignedHouseId = agent.Id;
+                 }
+             }
         }
 
         /// <summary>
@@ -183,30 +166,30 @@ namespace Civilizator.Simulation
                 if (house.Kind != BuildingKind.House)
                     continue;
 
-                // Remove dead adult residents from the house
-                var deadResidentIds = new List<int>();
-                foreach (var residentId in house.AdultResidentIds)
-                {
-                    // Find the agent with this resident ID
-                    var resident = agents.FirstOrDefault(a => GetAgentId(a) == residentId);
-                    if (resident == null || !resident.IsAlive)
-                    {
-                        deadResidentIds.Add(residentId);
-                    }
-                }
+                 // Remove dead adult residents from the house
+                 var deadResidentIds = new List<int>();
+                 foreach (var residentId in house.AdultResidentIds)
+                 {
+                     // Find the agent with this resident ID
+                     var resident = agents.FirstOrDefault(a => a.Id == residentId);
+                     if (resident == null || !resident.IsAlive)
+                     {
+                         deadResidentIds.Add(residentId);
+                     }
+                 }
 
-                // Remove dead residents and clear their house assignment
-                foreach (var deadId in deadResidentIds)
-                {
-                    house.RemoveAdultResident(deadId);
-                    
-                    // Find the agent and clear their house assignment
-                    var deadAgent = agents.FirstOrDefault(a => GetAgentId(a) == deadId);
-                    if (deadAgent != null)
-                    {
-                        deadAgent.AssignedHouseId = null;
-                    }
-                }
+                 // Remove dead residents and clear their house assignment
+                 foreach (var deadId in deadResidentIds)
+                 {
+                     house.RemoveAdultResident(deadId);
+                     
+                     // Find the agent and clear their house assignment
+                     var deadAgent = agents.FirstOrDefault(a => a.Id == deadId);
+                     if (deadAgent != null)
+                     {
+                         deadAgent.AssignedHouseId = null;
+                     }
+                 }
 
                 // Fill vacancies with random unassigned adults
                 while (house.AdultResidentIds.Count < 2)
@@ -220,16 +203,15 @@ namespace Civilizator.Simulation
                     if (unassignedAdults.Count == 0)
                         break;
 
-                    // Pick a random unassigned adult
-                    int randomIndex = _rng.Next(0, unassignedAdults.Count);
-                    var chosenAdult = unassignedAdults[randomIndex];
-                    int agentId = GetAgentId(chosenAdult);
+                     // Pick a random unassigned adult
+                     int randomIndex = _rng.Next(0, unassignedAdults.Count);
+                     var chosenAdult = unassignedAdults[randomIndex];
 
-                    // Assign to the house
-                    if (house.AssignAdultResident(agentId))
-                    {
-                        chosenAdult.AssignedHouseId = agentId;
-                    }
+                     // Assign to the house
+                     if (house.AssignAdultResident(chosenAdult.Id))
+                     {
+                         chosenAdult.AssignedHouseId = chosenAdult.Id;
+                     }
                     else
                     {
                         // If assignment failed, break to avoid infinite loop
@@ -270,13 +252,12 @@ namespace Civilizator.Simulation
             int randomIndex = _rng.Next(0, availableHouses.Count);
             var selectedHouse = availableHouses[randomIndex];
 
-            // Assign the agent to the selected house
-            int agentId = GetAgentId(agent);
-            if (selectedHouse.AssignAdultResident(agentId))
-            {
-                agent.AssignedHouseId = agentId;
-                return true;
-            }
+             // Assign the agent to the selected house
+             if (selectedHouse.AssignAdultResident(agent.Id))
+             {
+                 agent.AssignedHouseId = agent.Id;
+                 return true;
+             }
 
             return false;
         }
