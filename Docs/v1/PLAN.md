@@ -895,42 +895,12 @@ Each task: **Spec reference**, **Do**, **Verification**.
 
 ---
 
-## Running tests (for AI agents)
+## Instructions for AI agents
 
-**You cannot run tests autonomously.** When a task's **Verification** step requires tests to pass, you must **ask the user to run them and report results**.
-
-### When to request test runs
-
-- After implementing new code with test files
-- Before marking a task done (if verification includes "tests pass")
-- After fixing compilation errors
-
-### Instructions to give the user
-
-```
-Please run the tests and tell me if they pass:
-
-1. Open Unity Editor (6000.4.1f1)
-2. Go to: Window → Testing → Test Runner
-3. Click the "EditMode" tab
-4. Click the green play icon to run all tests
-5. Tell me if all tests show green checkmarks
-
-If tests don't appear, try: Assets → Reimport All, then reload the Test Runner window.
-```
-
-### Test coverage by module
-
-If the user reports test failures, they indicate:
-- **GridPosTests**: Problem with position/Manhattan distance logic
-- **BuildingPlacementTests**: Issue with overlap/gap rules or resource facility validation
-- **WorldGeneratorTests**: World generation seeding or region distribution broken
-- **SimulationClockTests**: Cycle advancement or delta time handling broken
-- **PathfindingTests**: BFS pathfinder or occupancy blocking issue
-- **GridOccupancyTests**: Tile passability or building footprint tracking broken
-- **SimulationTickDriverTests**: Presentation driver timing issue
-
-All tests run in EditMode only (no play mode tests yet).
+Before starting any task, **read [`INSTRUCTIONS.md`](../INSTRUCTIONS.md)** for general guidelines on:
+- Running tests and when to request test results from the user
+- Suggesting commit messages after completing tasks
+- Other important instructions for implementing tasks from this plan
 
 ---
 
