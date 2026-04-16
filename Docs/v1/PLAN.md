@@ -36,6 +36,15 @@ This document turns [`SPEC.md`](SPEC.md) into **small, sequential tasks** for im
 
 ---
 
+## Instructions for AI agents
+
+Before starting any task, **read [`INSTRUCTIONS.md`](../INSTRUCTIONS.md)** for general guidelines on:
+- Running tests and when to request test results from the user
+- Suggesting commit messages after completing tasks
+- Other important instructions for implementing tasks from this plan
+
+---
+
 ## Progress overview
 
 Check tasks off in order. IDs are stable—body sections use the same ID.
@@ -892,15 +901,6 @@ Each task: **Spec reference**, **Do**, **Verification**.
 - **Spec reference:** N/A.
 - **Do:** Short note in `Docs/` or root README: controls, scene name, known gaps vs SPEC.
 - **Verification:** New developer can open project and play.
-
----
-
-## Instructions for AI agents
-
-Before starting any task, **read [`INSTRUCTIONS.md`](../INSTRUCTIONS.md)** for general guidelines on:
-- Running tests and when to request test results from the user
-- Suggesting commit messages after completing tasks
-- Other important instructions for implementing tasks from this plan
 
 ---
 
