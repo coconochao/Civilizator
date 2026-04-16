@@ -62,10 +62,16 @@ namespace Civilizator.Simulation
                 sum += _targets[i];
             }
 
-            if (sum <= 0f || Math.Abs(sum - 1f) < 0.0001f)
+            if (sum <= 0f)
             {
-                // Already normalized or invalid, reset to default
+                // Invalid, reset to default
                 SetAllToDefault();
+                return;
+            }
+
+            if (Math.Abs(sum - 1f) < 0.0001f)
+            {
+                // Already normalized, return
                 return;
             }
 

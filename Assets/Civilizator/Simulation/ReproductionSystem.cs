@@ -45,14 +45,16 @@ namespace Civilizator.Simulation
 
             // Find all houses that have exactly 2 assigned adults
             var eligibleHouses = FindEligibleHouses(buildings, agents);
+            var createdChildrenCount = 0;
 
             foreach (var house in eligibleHouses)
             {
                 // Roll for reproduction based on the global rate
                 if (_random.NextDouble() < ReproductionRate)
                 {
-                    var child = CreateChildForHouse(house, agents);
+                    var child = CreateChildForHouse(house, agents, createdChildrenCount);
                     newChildren.Add(child);
+                    createdChildrenCount++;
                 }
             }
 
@@ -102,11 +104,12 @@ namespace Civilizator.Simulation
         /// </summary>
         /// <param name="house">The house where the child will be born</param>
         /// <param name="agents">List of all agents (used to generate unique ID)</param>
+        /// <param name="createdChildrenCount">Count of children created so far</param>
         /// <returns>New child agent</returns>
-        private static Agent CreateChildForHouse(Building house, List<Agent> agents)
+        private static Agent CreateChildForHouse(Building house, List<Agent> agents, int createdChildrenCount = 0)
         {
             // Generate unique ID for the child
-            var newId = agents.Count > 0 ? agents.Max(a => a.Id) + 1 : 1;
+            var newId = agents.Count > 0 ? agents.Max(a => a.Id) + 1 + createdChildrenCount : 1;
 
             // Create child at house position
             var child = new Agent(house.Anchor, newId)

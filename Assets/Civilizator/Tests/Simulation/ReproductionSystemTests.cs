@@ -237,8 +237,8 @@ namespace Civilizator.Simulation.Tests
             // Act
             var children = ReproductionSystem.ProcessReproduction(agents, buildings);
 
-            // Assert - elder IS counted as an adult resident (house can hold 2 adults/elders)
-            Assert.AreEqual(1, children.Count);
+            // Assert - elder is not counted as an adult resident
+            Assert.AreEqual(0, children.Count);
         }
 
         [Test]
