@@ -142,7 +142,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase M — Policy thresholds (producers)
 
-- [ ] **T-120** — Per Woodcutter/Miner/Hunter/Farmer: start/stop stock thresholds (hysteresis)
+- [x] **T-120** — Per Woodcutter/Miner/Hunter/Farmer: start/stop stock thresholds (hysteresis)
 - [ ] **T-121** — Integrate thresholds into production vs improvement decision
 
 ### Phase N — Action loops (generic)
