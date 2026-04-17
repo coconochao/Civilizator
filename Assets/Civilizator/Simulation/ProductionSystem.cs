@@ -28,7 +28,7 @@ namespace Civilizator.Simulation
             
             // Filter nodes by type and gatherability
             var validNodes = nodes
-                .Where(n => n.ResourceKind == requiredResource)
+                .Where(n => GetResourceKindForNodeType(n.Type) == requiredResource)
                 .Where(n => n.IsGatherable(hasQuarrySupport: false)) // Quarry support checked separately
                 .ToList();
 
@@ -41,7 +41,7 @@ namespace Civilizator.Simulation
 
             foreach (var node in validNodes)
             {
-                int distance = GridPos.ManhattanDistance(agent.Position, node.Position);
+                int distance = GridPos.Manhattan(agent.Position, node.Position);
                 if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -92,6 +92,21 @@ namespace Civilizator.Simulation
                 Profession.Hunter or 
                 Profession.Farmer;
         }
+        
+        /// <summary>
+        /// Maps NaturalNodeType to the corresponding ResourceKind that it produces.
+        /// </summary>
+        private static ResourceKind GetResourceKindForNodeType(NaturalNodeType nodeType)
+        {
+            return nodeType switch
+            {
+                NaturalNodeType.Tree => ResourceKind.Logs,
+                NaturalNodeType.Ore => ResourceKind.Ore,
+                NaturalNodeType.Animal => ResourceKind.Meat,
+                NaturalNodeType.Plant => ResourceKind.PlantFood,
+                _ => throw new ArgumentException($"Unknown node type {nodeType}")
+            };
+        }
 
         /// <summary>
         /// Processes gathering for an agent that is on the same tile as a node.
@@ -127,7 +142,7 @@ namespace Civilizator.Simulation
             while (gatherAccumulator >= 1.0f && currentCarry < carryCapacity && node.Remaining > 0)
             {
                 gatherAccumulator -= 1.0f;
-                node.Remaining--;
+                node.Gather(1);
                 currentCarry++;
                 unitsGathered++;
             }

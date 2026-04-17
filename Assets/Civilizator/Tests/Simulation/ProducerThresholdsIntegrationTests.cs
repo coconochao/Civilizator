@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Civilizator.Simulation;
+using System;
 
 namespace Civilizator.Tests.Simulation
 {

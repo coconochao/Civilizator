@@ -14,10 +14,10 @@ namespace Civilizator.Simulation.Tests
             
             var nodes = new List<NaturalNode>
             {
-                new NaturalNode(new GridPos(10, 10), ResourceKind.Logs),    // Distance 10
-                new NaturalNode(new GridPos(7, 7), ResourceKind.Logs),      // Distance 4
-                new NaturalNode(new GridPos(3, 3), ResourceKind.Ore),       // Wrong type
-                new NaturalNode(new GridPos(2, 2), ResourceKind.Logs)       // Distance 6
+                new NaturalNode(NaturalNodeType.Tree, new GridPos(10, 10)),    // Distance 10
+                new NaturalNode(NaturalNodeType.Tree, new GridPos(7, 7)),      // Distance 4
+                new NaturalNode(NaturalNodeType.Ore, new GridPos(3, 3)),       // Wrong type
+                new NaturalNode(NaturalNodeType.Tree, new GridPos(2, 2))       // Distance 6
             };
 
             // Act
@@ -35,9 +35,9 @@ namespace Civilizator.Simulation.Tests
             
             var nodes = new List<NaturalNode>
             {
-                new NaturalNode(new GridPos(5, 0), ResourceKind.Ore),
-                new NaturalNode(new GridPos(3, 0), ResourceKind.Ore),
-                new NaturalNode(new GridPos(10, 0), ResourceKind.Logs)
+                new NaturalNode(NaturalNodeType.Ore, new GridPos(5, 0)),
+                new NaturalNode(NaturalNodeType.Ore, new GridPos(3, 0)),
+                new NaturalNode(NaturalNodeType.Tree, new GridPos(10, 0))
             };
 
             // Act
@@ -55,8 +55,8 @@ namespace Civilizator.Simulation.Tests
             
             var nodes = new List<NaturalNode>
             {
-                new NaturalNode(new GridPos(12, 12), ResourceKind.Meat),
-                new NaturalNode(new GridPos(15, 15), ResourceKind.Meat)
+                new NaturalNode(NaturalNodeType.Animal, new GridPos(12, 12)),
+                new NaturalNode(NaturalNodeType.Animal, new GridPos(15, 15))
             };
 
             // Act
@@ -74,8 +74,8 @@ namespace Civilizator.Simulation.Tests
             
             var nodes = new List<NaturalNode>
             {
-                new NaturalNode(new GridPos(22, 22), ResourceKind.PlantFood),
-                new NaturalNode(new GridPos(21, 21), ResourceKind.PlantFood)
+                new NaturalNode(NaturalNodeType.Plant, new GridPos(22, 22)),
+                new NaturalNode(NaturalNodeType.Plant, new GridPos(21, 21))
             };
 
             // Act
@@ -91,10 +91,9 @@ namespace Civilizator.Simulation.Tests
             // Arrange
             var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
             
-            var depletedNode = new NaturalNode(new GridPos(6, 6), ResourceKind.Logs);
-            depletedNode.Remaining = 0;
+            var depletedNode = new NaturalNode(NaturalNodeType.Tree, new GridPos(6, 6), 0);
             
-            var validNode = new NaturalNode(new GridPos(10, 10), ResourceKind.Logs);
+            var validNode = new NaturalNode(NaturalNodeType.Tree, new GridPos(10, 10));
 
             var nodes = new List<NaturalNode> { depletedNode, validNode };
 
@@ -112,8 +111,8 @@ namespace Civilizator.Simulation.Tests
             var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
             var nodes = new List<NaturalNode>
             {
-                new NaturalNode(new GridPos(6, 6), ResourceKind.Ore),
-                new NaturalNode(new GridPos(7, 7), ResourceKind.Meat)
+                new NaturalNode(NaturalNodeType.Ore, new GridPos(6, 6)),
+                new NaturalNode(NaturalNodeType.Animal, new GridPos(7, 7))
             };
 
             // Act
@@ -128,7 +127,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange
             var agent = new Agent(new GridPos(5, 5));
-            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs);
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(5, 5));
 
             // Act
             bool result = ProductionSystem.IsOnSameTileAsNode(agent, node);
@@ -142,7 +141,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange
             var agent = new Agent(new GridPos(5, 5));
-            var node = new NaturalNode(new GridPos(6, 6), ResourceKind.Logs);
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(6, 6));
 
             // Act
             bool result = ProductionSystem.IsOnSameTileAsNode(agent, node);
@@ -168,7 +167,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange
             var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
-            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 10 };
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(5, 5), 10);
             float accumulator = 0f;
 
             // Act: 1 full second
@@ -186,7 +185,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange
             var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Child);
-            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 10 };
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(5, 5), 10);
             float accumulator = 0f;
 
             // Act: 2 seconds needed for 1 unit at 0.5 rate
@@ -204,7 +203,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange
             var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
-            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 10 };
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(5, 5), 10);
             float accumulator = 0f;
 
             // Act: 10 ticks of 0.1s each
@@ -225,7 +224,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange
             var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 10 };
-            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 10 };
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(5, 5), 10);
             float accumulator = 0f;
 
             // Act
@@ -242,7 +241,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange
             var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
-            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 3 };
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(5, 5), 3);
             float accumulator = 0f;
 
             // Act: Attempt to gather 5 units
@@ -259,7 +258,7 @@ namespace Civilizator.Simulation.Tests
         {
             // Arrange
             var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
-            var node = new NaturalNode(new GridPos(6, 6), ResourceKind.Logs) { Remaining = 10 };
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(6, 6), 10);
             float accumulator = 0f;
 
             // Act
