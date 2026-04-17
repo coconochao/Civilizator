@@ -269,5 +269,117 @@ namespace Civilizator.Simulation.Tests
             Assert.That(agent.CarriedResources, Is.EqualTo(0));
             Assert.That(node.Remaining, Is.EqualTo(10));
         }
+
+        #region T-132 Deposit & Improvement Switch Tests
+
+        [TestCase(49, 49, true)]
+        [TestCase(50, 50, true)]
+        [TestCase(51, 51, true)]
+        [TestCase(48, 50, false)]
+        [TestCase(50, 48, false)]
+        [TestCase(52, 50, false)]
+        [TestCase(50, 52, false)]
+        public void IsAtCentralStorage_CorrectlyIdentifiesCentralFootprint(int x, int y, bool expected)
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(x, y), Profession.Woodcutter, LifeStage.Adult);
+            
+            // Act
+            bool result = ProductionSystem.IsAtCentralStorage(agent);
+            
+            // Assert
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void DepositCarriedResources_AtCentral_DepositsCorrectResourceType()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 7 };
+            var storage = new CentralStorage();
+
+            // Act
+            int deposited = ProductionSystem.DepositCarriedResources(agent, storage);
+
+            // Assert
+            Assert.That(deposited, Is.EqualTo(7));
+            Assert.That(agent.CarriedResources, Is.EqualTo(0));
+            Assert.That(storage.GetStock(ResourceKind.Logs), Is.EqualTo(7));
+            Assert.That(storage.GetStock(ResourceKind.Ore), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void DepositCarriedResources_NotAtCentral_ReturnsZero()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(10, 10), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 7 };
+            var storage = new CentralStorage();
+
+            // Act
+            int deposited = ProductionSystem.DepositCarriedResources(agent, storage);
+
+            // Assert
+            Assert.That(deposited, Is.EqualTo(0));
+            Assert.That(agent.CarriedResources, Is.EqualTo(7));
+            Assert.That(storage.GetStock(ResourceKind.Logs), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void DepositCarriedResources_EmptyCarry_ReturnsZero()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 0 };
+            var storage = new CentralStorage();
+
+            // Act
+            int deposited = ProductionSystem.DepositCarriedResources(agent, storage);
+
+            // Assert
+            Assert.That(deposited, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ShouldSwitchToImprovement_NoNodes_ReturnsTrue()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+
+            // Act
+            bool shouldSwitch = ProductionSystem.ShouldSwitchToImprovement(agent, null, 0, 1000);
+
+            // Assert
+            Assert.That(shouldSwitch, Is.True);
+        }
+
+        [Test]
+        public void ShouldSwitchToImprovement_StockAboveStopThreshold_ReturnsTrue()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(51, 51), 100);
+
+            // Default stop threshold for Woodcutter is 0.8
+            // 900 / 1000 = 0.9 which is above 0.8
+            bool shouldSwitch = ProductionSystem.ShouldSwitchToImprovement(agent, node, 900, 1000);
+
+            // Assert
+            Assert.That(shouldSwitch, Is.True);
+        }
+
+        [Test]
+        public void ShouldSwitchToImprovement_StockBelowStopThreshold_ReturnsFalse()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(51, 51), 100);
+
+            // 700 / 1000 = 0.7 which is below 0.8 stop threshold
+            bool shouldSwitch = ProductionSystem.ShouldSwitchToImprovement(agent, node, 700, 1000);
+
+            // Assert
+            Assert.That(shouldSwitch, Is.False);
+        }
+
+        #endregion
     }
 }

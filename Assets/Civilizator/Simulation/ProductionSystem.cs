@@ -150,5 +150,68 @@ namespace Civilizator.Simulation
             agent.CarriedResources = currentCarry;
             return unitsGathered;
         }
+
+        /// <summary>
+        /// Checks if agent is positioned at the central building storage area.
+        /// Central building is anchored at (50,50) with 3x3 footprint.
+        /// </summary>
+        public static bool IsAtCentralStorage(Agent agent)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            
+            // Central building is at anchor (50,50) with 3x3 footprint
+            return agent.Position.X >= 49 && agent.Position.X <= 51 &&
+                   agent.Position.Y >= 49 && agent.Position.Y <= 51;
+        }
+
+        /// <summary>
+        /// Deposits all carried resources from agent into central storage.
+        /// Clears agent's carried resources after successful deposit.
+        /// </summary>
+        /// <returns>Number of units actually deposited</returns>
+        public static int DepositCarriedResources(Agent agent, CentralStorage storage)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
+            if (!IsAtCentralStorage(agent))
+                return 0;
+            if (agent.CarriedResources <= 0)
+                return 0;
+
+            ResourceKind resource = GetRequiredResourceForProfession(agent.Profession);
+            int amount = agent.CarriedResources;
+            
+            storage.Deposit(resource, amount);
+            agent.CarriedResources = 0;
+
+            return amount;
+        }
+
+        /// <summary>
+        /// Determines if agent should switch from production loop to improvement loop.
+        /// Returns true when:
+        /// 1. No valid gatherable nodes are available OR
+        /// 2. Resource stock is above the stop threshold
+        /// </summary>
+        public static bool ShouldSwitchToImprovement(Agent agent, NaturalNode nearestNode, int currentStock, int maxStock)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            if (!IsProducerProfession(agent.Profession))
+                throw new ArgumentException("Only producer professions can switch between production/improvement");
+
+            // No nodes available → must improve
+            if (nearestNode == null)
+                return true;
+
+            // Stock is above stop threshold → improve
+            float normalizedStock = (float)currentStock / maxStock;
+            float stopThreshold = ProducerThresholds.GetStopThreshold(agent.Profession);
+            
+            return normalizedStock >= stopThreshold;
+        }
     }
 }
