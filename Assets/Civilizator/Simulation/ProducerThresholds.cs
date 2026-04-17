@@ -94,7 +94,7 @@ namespace Civilizator.Simulation
             var thresholds = _thresholds[profession];
 
             // Hysteresis logic: below start threshold → produce; above stop threshold → improve
-            return normalizedStock < thresholds.start;
+            return Math.Round(normalizedStock, 2) < Math.Round(thresholds.start, 2);
         }
     }
 }
