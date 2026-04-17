@@ -22,6 +22,11 @@ namespace Civilizator.Simulation
         public int? AssignedHouseId { get; set; }
 
         /// <summary>
+        /// Number of resource units currently being carried by this agent.
+        /// </summary>
+        public int CarriedResources { get; set; } = 0;
+
+        /// <summary>
         /// Tracks whether this agent has eaten during the current cycle.
         /// Reset at the start of each new cycle.
         /// </summary>

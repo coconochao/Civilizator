@@ -162,5 +162,113 @@ namespace Civilizator.Simulation.Tests
             Assert.That(ProductionSystem.IsProducerProfession(Profession.Builder), Is.False);
             Assert.That(ProductionSystem.IsProducerProfession(Profession.Soldier), Is.False);
         }
+
+        [Test]
+        public void ProcessGathering_AdultAgent_GathersOneUnitPerSecond()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
+            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 10 };
+            float accumulator = 0f;
+
+            // Act: 1 full second
+            int gathered = ProductionSystem.ProcessGathering(agent, node, 1.0f, ref accumulator);
+
+            // Assert
+            Assert.That(gathered, Is.EqualTo(1));
+            Assert.That(agent.CarriedResources, Is.EqualTo(1));
+            Assert.That(node.Remaining, Is.EqualTo(9));
+            Assert.That(accumulator, Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void ProcessGathering_ChildAgent_GathersHalfRate()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Child);
+            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 10 };
+            float accumulator = 0f;
+
+            // Act: 2 seconds needed for 1 unit at 0.5 rate
+            ProductionSystem.ProcessGathering(agent, node, 1.0f, ref accumulator);
+            int gathered = ProductionSystem.ProcessGathering(agent, node, 1.0f, ref accumulator);
+
+            // Assert
+            Assert.That(gathered, Is.EqualTo(1));
+            Assert.That(agent.CarriedResources, Is.EqualTo(1));
+            Assert.That(node.Remaining, Is.EqualTo(9));
+        }
+
+        [Test]
+        public void ProcessGathering_FractionalDeltaTime_AccumulatesCorrectly()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
+            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 10 };
+            float accumulator = 0f;
+
+            // Act: 10 ticks of 0.1s each
+            int totalGathered = 0;
+            for (int i = 0; i < 10; i++)
+            {
+                totalGathered += ProductionSystem.ProcessGathering(agent, node, 0.1f, ref accumulator);
+            }
+
+            // Assert
+            Assert.That(totalGathered, Is.EqualTo(1));
+            Assert.That(agent.CarriedResources, Is.EqualTo(1));
+            Assert.That(node.Remaining, Is.EqualTo(9));
+        }
+
+        [Test]
+        public void ProcessGathering_CarryFull_StopsGathering()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 10 };
+            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 10 };
+            float accumulator = 0f;
+
+            // Act
+            int gathered = ProductionSystem.ProcessGathering(agent, node, 10.0f, ref accumulator);
+
+            // Assert
+            Assert.That(gathered, Is.EqualTo(0));
+            Assert.That(agent.CarriedResources, Is.EqualTo(10));
+            Assert.That(node.Remaining, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void ProcessGathering_NodeDepleted_StopsGathering()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
+            var node = new NaturalNode(new GridPos(5, 5), ResourceKind.Logs) { Remaining = 3 };
+            float accumulator = 0f;
+
+            // Act: Attempt to gather 5 units
+            int gathered = ProductionSystem.ProcessGathering(agent, node, 5.0f, ref accumulator);
+
+            // Assert
+            Assert.That(gathered, Is.EqualTo(3));
+            Assert.That(agent.CarriedResources, Is.EqualTo(3));
+            Assert.That(node.Remaining, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ProcessGathering_NotOnSameTile_ReturnsZero()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(5, 5), Profession.Woodcutter, LifeStage.Adult);
+            var node = new NaturalNode(new GridPos(6, 6), ResourceKind.Logs) { Remaining = 10 };
+            float accumulator = 0f;
+
+            // Act
+            int gathered = ProductionSystem.ProcessGathering(agent, node, 10.0f, ref accumulator);
+
+            // Assert
+            Assert.That(gathered, Is.EqualTo(0));
+            Assert.That(agent.CarriedResources, Is.EqualTo(0));
+            Assert.That(node.Remaining, Is.EqualTo(10));
+        }
     }
 }

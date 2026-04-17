@@ -92,5 +92,48 @@ namespace Civilizator.Simulation
                 Profession.Hunter or 
                 Profession.Farmer;
         }
+
+        /// <summary>
+        /// Processes gathering for an agent that is on the same tile as a node.
+        /// Gathers at rate of 1 unit per second adjusted by agent productivity.
+        /// Continues until agent carry is full or node is depleted.
+        /// </summary>
+        /// <param name="agent">Gathering agent</param>
+        /// <param name="node">Target node</param>
+        /// <param name="deltaTime">Time elapsed since last update</param>
+        /// <param name="gatherAccumulator">Accumulated fractional gather progress (modified in place)</param>
+        /// <returns>Number of units gathered this tick</returns>
+        public static int ProcessGathering(Agent agent, NaturalNode node, float deltaTime, ref float gatherAccumulator)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+            if (deltaTime < 0)
+                throw new ArgumentOutOfRangeException(nameof(deltaTime));
+
+            if (!IsOnSameTileAsNode(agent, node))
+                return 0;
+
+            float productivity = agent.GetProductivityMultiplier();
+            float gatherRatePerSecond = productivity; // 1 per second base, scaled by productivity
+
+            gatherAccumulator += deltaTime * gatherRatePerSecond;
+
+            int unitsGathered = 0;
+            int carryCapacity = agent.GetCarryCapacity();
+            int currentCarry = agent.CarriedResources;
+
+            while (gatherAccumulator >= 1.0f && currentCarry < carryCapacity && node.Remaining > 0)
+            {
+                gatherAccumulator -= 1.0f;
+                node.Remaining--;
+                currentCarry++;
+                unitsGathered++;
+            }
+
+            agent.CarriedResources = currentCarry;
+            return unitsGathered;
+        }
     }
 }
