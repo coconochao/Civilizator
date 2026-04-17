@@ -75,5 +75,26 @@ namespace Civilizator.Simulation
         {
             return new Dictionary<Profession, (float start, float stop)>(_thresholds);
         }
+
+        /// <summary>
+        /// Determines whether a producer should be producing or improving based on current stock levels.
+        /// Implements hysteresis: below start threshold → produce; above stop threshold → improve;
+        /// between thresholds → maintain current state.
+        /// </summary>
+        /// <param name="profession">The producer profession (Woodcutter, Miner, Hunter, Farmer)</param>
+        /// <param name="currentStock">The current stock level for this profession's resource</param>
+        /// <param name="maxStock">The maximum stock capacity (for normalization)</param>
+        /// <returns>True if the producer should be producing, false if improving</returns>
+        public static bool ShouldBeProducing(Profession profession, int currentStock, int maxStock)
+        {
+            if (maxStock <= 0)
+                throw new ArgumentException("Max stock must be greater than zero.");
+
+            float normalizedStock = (float)currentStock / maxStock;
+            var thresholds = _thresholds[profession];
+
+            // Hysteresis logic: below start threshold → produce; above stop threshold → improve
+            return normalizedStock < thresholds.start;
+        }
     }
 }
