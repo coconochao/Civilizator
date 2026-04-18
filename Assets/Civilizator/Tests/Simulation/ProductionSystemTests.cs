@@ -381,5 +381,208 @@ namespace Civilizator.Simulation.Tests
         }
 
         #endregion
+
+        #region T-133 Improvement Loop Tests
+
+        [Test]
+        public void FindNearestImprovementTarget_WoodcutterFindsNearestPlantation()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            
+            var buildings = new List<Building>
+            {
+                new Building(BuildingKind.Plantation, new GridPos(60, 60)) { IsUnderConstruction = true }, // Distance 20
+                new Building(BuildingKind.Plantation, new GridPos(55, 55)) { IsUnderConstruction = true }, // Distance 10
+                new Building(BuildingKind.Quarry, new GridPos(40, 40)) { IsUnderConstruction = true },     // Wrong type
+                new Building(BuildingKind.Plantation, new GridPos(45, 45)) { IsUnderConstruction = true }  // Distance 10
+            };
+
+            // Act
+            var nearest = ProductionSystem.FindNearestImprovementTarget(agent, buildings);
+
+            // Assert
+            Assert.That(nearest.Anchor, Is.EqualTo(new GridPos(55, 55)));
+        }
+
+        [Test]
+        public void FindNearestImprovementTarget_MinerFindsNearestQuarry()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Miner, LifeStage.Adult);
+            
+            var buildings = new List<Building>
+            {
+                new Building(BuildingKind.Quarry, new GridPos(53, 53)) { IsUnderConstruction = true },
+                new Building(BuildingKind.Quarry, new GridPos(56, 56)) { IsUnderConstruction = true }
+            };
+
+            // Act
+            var nearest = ProductionSystem.FindNearestImprovementTarget(agent, buildings);
+
+            // Assert
+            Assert.That(nearest.Anchor, Is.EqualTo(new GridPos(53, 53)));
+        }
+
+        [Test]
+        public void FindNearestImprovementTarget_IgnoresCompletedBuildings()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            
+            var completedBuilding = new Building(BuildingKind.Plantation, new GridPos(51, 51)) 
+            { 
+                IsUnderConstruction = false, 
+                UpgradeLevel = 1 
+            };
+            
+            var validBuilding = new Building(BuildingKind.Plantation, new GridPos(60, 60)) 
+            { 
+                IsUnderConstruction = true 
+            };
+
+            var buildings = new List<Building> { completedBuilding, validBuilding };
+
+            // Act
+            var nearest = ProductionSystem.FindNearestImprovementTarget(agent, buildings);
+
+            // Assert
+            Assert.That(nearest, Is.EqualTo(validBuilding));
+        }
+
+        [Test]
+        public void FindNearestImprovementTarget_NoValidTargets_ReturnsNull()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            var buildings = new List<Building>
+            {
+                new Building(BuildingKind.House, new GridPos(51, 51)),
+                new Building(BuildingKind.Central, new GridPos(49, 49))
+            };
+
+            // Act
+            var nearest = ProductionSystem.FindNearestImprovementTarget(agent, buildings);
+
+            // Assert
+            Assert.That(nearest, Is.Null);
+        }
+
+        [Test]
+        public void WithdrawResourcesForImprovement_AtCentral_WithdrawsCorrectAmount()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            var target = new Building(BuildingKind.Plantation, new GridPos(60, 60)) { ConstructionProgress = 20 };
+            var storage = new CentralStorage();
+            storage.Deposit(ResourceKind.Logs, 100);
+
+            // Act
+            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage);
+
+            // Assert
+            Assert.That(withdrawn, Is.EqualTo(10)); // Carry capacity 10
+            Assert.That(agent.CarriedResources, Is.EqualTo(10));
+            Assert.That(storage.GetStock(ResourceKind.Logs), Is.EqualTo(90));
+        }
+
+        [Test]
+        public void WithdrawResourcesForImprovement_NotAtCentral_ReturnsZero()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(10, 10), Profession.Woodcutter, LifeStage.Adult);
+            var target = new Building(BuildingKind.Plantation, new GridPos(60, 60));
+            var storage = new CentralStorage();
+            storage.Deposit(ResourceKind.Logs, 100);
+
+            // Act
+            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage);
+
+            // Assert
+            Assert.That(withdrawn, Is.EqualTo(0));
+            Assert.That(agent.CarriedResources, Is.EqualTo(0));
+            Assert.That(storage.GetStock(ResourceKind.Logs), Is.EqualTo(100));
+        }
+
+        [Test]
+        public void WithdrawResourcesForImprovement_WithdrawsOnlyRemainingRequired()
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            var target = new Building(BuildingKind.Plantation, new GridPos(60, 60)) { ConstructionProgress = 95 }; // Need 5 more
+            var storage = new CentralStorage();
+            storage.Deposit(ResourceKind.Logs, 100);
+
+            // Act
+            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage);
+
+            // Assert
+            Assert.That(withdrawn, Is.EqualTo(5));
+            Assert.That(agent.CarriedResources, Is.EqualTo(5));
+        }
+
+        [TestCase(50, 50, true)]
+        [TestCase(51, 51, true)]
+        [TestCase(49, 49, false)]
+        [TestCase(48, 50, false)]
+        [TestCase(50, 52, false)]
+        public void IsAtBuildingSite_CorrectlyIdentifiesBuildingFootprint(int agentX, int agentY, bool expected)
+        {
+            // Arrange
+            var agent = new Agent(new GridPos(agentX, agentY), Profession.Woodcutter, LifeStage.Adult);
+            var building = new Building(BuildingKind.Plantation, new GridPos(50, 50)); // 2x2 footprint
+
+            // Act
+            bool result = ProductionSystem.IsAtBuildingSite(agent, building);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void DeliverResourcesToBuilding_AtSite_DeliversResourcesAndSchedulesBuildTime()
+        {
+            // Arrange
+            var clock = new SimulationClock();
+            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 10 };
+            var target = new Building(BuildingKind.Plantation, new GridPos(50, 50)) { ConstructionProgress = 90, SimulationClock = clock };
+
+            // Act
+            int delivered = ProductionSystem.DeliverResourcesToBuilding(agent, target, clock);
+
+            // Assert
+            Assert.That(delivered, Is.EqualTo(10));
+            Assert.That(agent.CarriedResources, Is.EqualTo(0));
+            Assert.That(target.ConstructionProgress, Is.EqualTo(100)); // 90 + 10
+            Assert.That(target.BuildTimeEndSeconds, Is.GreaterThan(0)); // Build time scheduled
+        }
+
+        [Test]
+        public void DeliverResourcesToBuilding_NotAtSite_ReturnsZero()
+        {
+            // Arrange
+            var clock = new SimulationClock();
+            var agent = new Agent(new GridPos(10, 10), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 10 };
+            var target = new Building(BuildingKind.Plantation, new GridPos(50, 50));
+
+            // Act
+            int delivered = ProductionSystem.DeliverResourcesToBuilding(agent, target, clock);
+
+            // Assert
+            Assert.That(delivered, Is.EqualTo(0));
+            Assert.That(agent.CarriedResources, Is.EqualTo(10));
+            Assert.That(target.ConstructionProgress, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetRequiredBuildingForProfession_CorrectMappings()
+        {
+            Assert.That(ProductionSystem.GetRequiredBuildingForProfession(Profession.Woodcutter), Is.EqualTo(BuildingKind.Plantation));
+            Assert.That(ProductionSystem.GetRequiredBuildingForProfession(Profession.Miner), Is.EqualTo(BuildingKind.Quarry));
+            Assert.That(ProductionSystem.GetRequiredBuildingForProfession(Profession.Hunter), Is.EqualTo(BuildingKind.CattleFarm));
+            Assert.That(ProductionSystem.GetRequiredBuildingForProfession(Profession.Farmer), Is.EqualTo(BuildingKind.Farm));
+        }
+
+        #endregion
     }
 }

@@ -150,7 +150,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-130** — Production loop: nearest relevant node (Manhattan), same tile to gather
 - [x] **T-131** — Gather 1/sec scaled by productivity until full or empty/depleted
 - [x] **T-132** — Deposit at central; if no node, switch to improvement loop
-- [ ] **T-133** — Improvement loop: withdraw → travel → deliver progress → build-time seconds
+- [x] **T-133** — Improvement loop: withdraw → travel → deliver progress → build-time seconds
 
 ### Phase O — Profession-specific wiring
 

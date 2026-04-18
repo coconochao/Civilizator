@@ -213,5 +213,131 @@ namespace Civilizator.Simulation
             
             return normalizedStock >= stopThreshold;
         }
+
+        /// <summary>
+        /// Finds the nearest relevant building site that requires resources for improvement/upgrade.
+        /// Uses Manhattan distance for selection.
+        /// </summary>
+        /// <param name="agent">The agent searching for a building target</param>
+        /// <param name="buildings">All available buildings</param>
+        /// <returns>Nearest building requiring work required by this profession, or null if none available</returns>
+        public static Building FindNearestImprovementTarget(Agent agent, IEnumerable<Building> buildings)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            if (buildings == null)
+                throw new ArgumentNullException(nameof(buildings));
+
+            BuildingKind requiredBuilding = GetRequiredBuildingForProfession(agent.Profession);
+            
+            // Filter buildings: correct type, under construction or can be upgraded
+            var validTargets = buildings
+                .Where(b => b.Kind == requiredBuilding)
+                .Where(b => b.IsUnderConstruction || b.UpgradeLevel < 1)
+                .Where(b => !b.IsConstructionPhaseComplete())
+                .ToList();
+
+            if (validTargets.Count == 0)
+                return null;
+
+            // Find building with minimum Manhattan distance to agent
+            Building nearest = null;
+            int minDistance = int.MaxValue;
+
+            foreach (var building in validTargets)
+            {
+                int distance = GridPos.Manhattan(agent.Position, building.Anchor);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    nearest = building;
+                }
+            }
+
+            return nearest;
+        }
+
+        /// <summary>
+        /// Withdraws resources from central storage for building improvement.
+        /// Withdraws up to agent's carry capacity or remaining required resources.
+        /// </summary>
+        /// <returns>Amount actually withdrawn</returns>
+        public static int WithdrawResourcesForImprovement(Agent agent, Building target, CentralStorage storage)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
+            if (!IsAtCentralStorage(agent))
+                return 0;
+
+            ResourceKind requiredResource = target.GetConstructionResourceKind();
+            int remainingRequired = target.GetRequiredConstructionAmount() - target.ConstructionProgress;
+            int carryCapacity = agent.GetCarryCapacity();
+            int withdrawAmount = Math.Min(Math.Min(carryCapacity, remainingRequired), storage.GetStock(requiredResource));
+
+            if (withdrawAmount <= 0)
+                return 0;
+
+            storage.Withdraw(requiredResource, withdrawAmount);
+            agent.CarriedResources = withdrawAmount;
+
+            return withdrawAmount;
+        }
+
+        /// <summary>
+        /// Checks if agent is positioned at the target building footprint.
+        /// </summary>
+        public static bool IsAtBuildingSite(Agent agent, Building target)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+
+            int size = target.GetFootprintSize();
+            return agent.Position.X >= target.Anchor.X && agent.Position.X < target.Anchor.X + size &&
+                   agent.Position.Y >= target.Anchor.Y && agent.Position.Y < target.Anchor.Y + size;
+        }
+
+        /// <summary>
+        /// Delivers carried resources to building site and starts build-time timer.
+        /// Applies productivity multiplier for build time calculation.
+        /// </summary>
+        /// <returns>Amount actually delivered</returns>
+        public static int DeliverResourcesToBuilding(Agent agent, Building target, SimulationClock clock)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+            if (!IsAtBuildingSite(agent, target))
+                return 0;
+            if (agent.CarriedResources <= 0)
+                return 0;
+
+            int delivered = agent.CarriedResources;
+            target.DeliverBuildResources(delivered, agent.GetProductivityMultiplier());
+            agent.CarriedResources = 0;
+
+            return delivered;
+        }
+
+        /// <summary>
+        /// Gets the building kind that a profession improves during improvement loop.
+        /// </summary>
+        public static BuildingKind GetRequiredBuildingForProfession(Profession profession)
+        {
+            return profession switch
+            {
+                Profession.Woodcutter => BuildingKind.Plantation,
+                Profession.Miner => BuildingKind.Quarry,
+                Profession.Hunter => BuildingKind.CattleFarm,
+                Profession.Farmer => BuildingKind.Farm,
+                _ => throw new ArgumentException($"Profession {profession} does not have an associated improvement building")
+            };
+        }
     }
 }
