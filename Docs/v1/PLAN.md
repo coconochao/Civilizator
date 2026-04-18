@@ -154,10 +154,10 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase O — Profession-specific wiring
 
-- [ ] **T-140** — Woodcutter: Tree → Logs; improve Plantation
-- [ ] **T-141** — Miner: Ore node; improve Quarry
-- [ ] **T-142** — Hunter: Animal → Meat; improve Cattle farm
-- [ ] **T-143** — Farmer: Plant → Plant food; improve Farm
+- [x] **T-140** — Woodcutter: Tree → Logs; improve Plantation
+- [x] **T-141** — Miner: Ore node; improve Quarry
+- [x] **T-142** — Hunter: Animal → Meat; improve Cattle farm
+- [x] **T-143** — Farmer: Plant → Plant food; improve Farm
 - [ ] **T-144** — Builder: no production; housing priority for unassigned adults
 - [ ] **T-145** — Builder scoring: target_share / central stock per producer profession
 - [ ] **T-146** — Builder: pick highest score, nearest upgradable/under-construction facility
