@@ -158,9 +158,9 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-141** — Miner: Ore node; improve Quarry
 - [x] **T-142** — Hunter: Animal → Meat; improve Cattle farm
 - [x] **T-143** — Farmer: Plant → Plant food; improve Farm
-- [ ] **T-144** — Builder: no production; housing priority for unassigned adults
-- [ ] **T-145** — Builder scoring: target_share / central stock per producer profession
-- [ ] **T-146** — Builder: pick highest score, nearest upgradable/under-construction facility
+- [X] **T-144** — Builder: no production; housing priority for unassigned adults
+- [X] **T-145** — Builder scoring: target_share / central stock per producer profession
+- [X] **T-146** — Builder: pick highest score, nearest upgradable/under-construction facility
 
 ### Phase P — Soldiers & towers
 

@@ -229,7 +229,24 @@ namespace Civilizator.Simulation
                 throw new ArgumentNullException(nameof(buildings));
 
             BuildingKind requiredBuilding = GetRequiredBuildingForProfession(agent.Profession);
-            
+            return FindNearestImprovementTarget(agent, buildings, requiredBuilding);
+        }
+
+        /// <summary>
+        /// Finds the nearest relevant building site that requires resources for improvement/upgrade.
+        /// Uses Manhattan distance for selection.
+        /// </summary>
+        /// <param name="agent">The agent searching for a building target</param>
+        /// <param name="buildings">All available buildings</param>
+        /// <param name="requiredBuilding">The building kind this agent should help improve</param>
+        /// <returns>Nearest building requiring work required by this profession, or null if none available</returns>
+        public static Building FindNearestImprovementTarget(Agent agent, IEnumerable<Building> buildings, BuildingKind requiredBuilding)
+        {
+            if (agent == null)
+                throw new ArgumentNullException(nameof(agent));
+            if (buildings == null)
+                throw new ArgumentNullException(nameof(buildings));
+
             // Filter buildings: correct type, under construction or can be upgraded
             var validTargets = buildings
                 .Where(b => b.Kind == requiredBuilding)
