@@ -168,7 +168,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-151** — Patrol positions on perimeter diamond; round-robin assignment
 - [x] **T-152** — Tower: needs soldier inside to fire; 6×6 hit area (2 tiles each direction from 2×2 center)
 - [x] **T-153** — Tower damage 1 base / 2 upgraded; 1 attack/sec; HP 100
-- [ ] **T-154** — Soldier mode split player %; periodic switch one-at-a-time + cooldown
+- [x] **T-154** — Soldier mode split player %; periodic switch one-at-a-time + cooldown
 - [ ] **T-155** — Soldier improve: towers 100 Ore; player emphasis control hook
 
 ### Phase Q — Enemies
@@ -983,3 +983,4 @@ Death), multi-agent independent counters, death handling. Verification: agents a
 - 2026-04-21 | T-152 | **Implemented tower fire gating and hit-area helpers.** Added `TowerCombatSystem` with `CanTowerFire()` and `HasSoldierInside()` so towers only fire when a living soldier stands on a footprint tile. Added `GetTowerHitArea()` and `IsEnemyInRange()` for the 6x6 attack rectangle centered on the 2x2 tower footprint, with map-bound clipping. Added focused tests covering staffed/unstaffed towers and boundary in/out range cases. Files: `TowerCombatSystem.cs`, `TowerCombatSystemTests.cs`.
 
 - 2026-04-21 | T-153 | **Implemented tower stats.** Added tower combat constants and helpers in `TowerCombatSystem`: max HP 100, base damage 1, upgraded damage 2, and 1-second attack cadence. Added `Building.HitPoints` initialization for towers so tower instances start at 100 HP. Added tests covering base stats, upgraded damage, and the 10-second kill check against a 10 HP target. Files: `TowerCombatSystem.cs`, `BuildingPlacement.cs`, `TowerCombatSystemTests.cs`.
+- 2026-04-21 | T-154 | **Implemented soldier mode split switching.** Added `SoldierMode` to `Agent`, a `SoldierModeSwitchSystem` that balances patrolling vs improving with a target share, threshold, and per-soldier cooldown, plus tests covering convergence, cooldown behavior, and mode counting. Also reset soldiers to patrolling when profession assignment or profession switching creates a soldier. Files: `Agent.cs`, `ProfessionAssignmentSystem.cs`, `ProfessionSwitchSystem.cs`, `SoldierModeSwitchSystem.cs`, `SoldierModeSwitchSystemTests.cs`.

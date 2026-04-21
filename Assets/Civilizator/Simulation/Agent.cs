@@ -18,6 +18,7 @@ namespace Civilizator.Simulation
         public GridPos Position { get; set; }
         public Profession Profession { get; set; }
         public LifeStage LifeStage { get; set; }
+        public SoldierMode SoldierMode { get; set; }
         public int HitPoints { get; set; }
         public int? AssignedHouseId { get; set; }
 
@@ -65,6 +66,7 @@ namespace Civilizator.Simulation
             Position = position;
             Profession = Profession.Woodcutter;
             LifeStage = LifeStage.Child;
+            SoldierMode = SoldierMode.Patrolling;
             HitPoints = DefaultHitPoints;
             AssignedHouseId = null;
         }
@@ -79,6 +81,7 @@ namespace Civilizator.Simulation
             Position = position;
             Profession = Profession.Woodcutter;
             LifeStage = LifeStage.Child;
+            SoldierMode = SoldierMode.Patrolling;
             HitPoints = DefaultHitPoints;
             AssignedHouseId = null;
         }
@@ -92,6 +95,7 @@ namespace Civilizator.Simulation
             Position = position;
             Profession = profession;
             LifeStage = lifeStage;
+            SoldierMode = SoldierMode.Patrolling;
             HitPoints = DefaultHitPoints;
             AssignedHouseId = null;
         }
@@ -174,6 +178,15 @@ namespace Civilizator.Simulation
         Farmer,
         Builder,
         Soldier
+    }
+
+    /// <summary>
+    /// Soldier work modes in V1.
+    /// </summary>
+    public enum SoldierMode
+    {
+        Patrolling,
+        Improving
     }
 
     /// <summary>

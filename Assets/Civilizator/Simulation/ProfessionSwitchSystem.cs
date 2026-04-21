@@ -109,6 +109,10 @@ namespace Civilizator.Simulation
                 {
                     // Perform the switch
                     agentToSwitch.Profession = mostUnder.Value;
+                    if (mostUnder.Value == Profession.Soldier)
+                    {
+                        agentToSwitch.SoldierMode = SoldierMode.Patrolling;
+                    }
                     _lastSwitchCycle[agentToSwitch] = _currentCycle;
                     return true;
                 }

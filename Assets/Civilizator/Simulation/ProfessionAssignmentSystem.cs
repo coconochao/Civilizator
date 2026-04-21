@@ -98,6 +98,10 @@ namespace Civilizator.Simulation
         {
             Profession profession = GetMostUndernumberedProfession(otherAgents, targets);
             agent.Profession = profession;
+            if (profession == Profession.Soldier)
+            {
+                agent.SoldierMode = SoldierMode.Patrolling;
+            }
         }
 
         /// <summary>
