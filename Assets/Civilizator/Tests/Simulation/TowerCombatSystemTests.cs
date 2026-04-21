@@ -87,6 +87,26 @@ namespace Civilizator.Simulation.Tests
         }
 
         [Test]
+        public void ApplyAttack_UsesTowerDamageOnTheSharedCombatPipeline()
+        {
+            var tower = new Building(BuildingKind.Tower, new GridPos(10, 10));
+            var enemy = new Enemy(new GridPos(12, 12))
+            {
+                HitPoints = 3
+            };
+
+            TowerCombatSystem.ApplyAttack(tower, enemy);
+
+            Assert.AreEqual(2, enemy.HitPoints);
+
+            tower.UpgradeLevel = 1;
+            TowerCombatSystem.ApplyAttack(tower, enemy);
+
+            Assert.AreEqual(0, enemy.HitPoints);
+            Assert.IsFalse(enemy.IsAlive);
+        }
+
+        [Test]
         public void IsEnemyInRange_IncludesBoundaryTilesAndExcludesOutsideTiles()
         {
             var tower = new Building(BuildingKind.Tower, new GridPos(10, 10));

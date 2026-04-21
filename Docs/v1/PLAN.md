@@ -175,11 +175,11 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 - [x] **T-160** — Spawn schedule: first at cycle 10, +1 every 10 cycles cumulative; spawn at map edges
 - [x] **T-161** — Enemy movement 4-way; targeting priority order per SPEC
-- [ ] **T-162** — Enemy stats: HP 10, damage 1, 1 attack/sec, no miss
+- [x] **T-162** — Enemy stats: HP 10, damage 1, 1 attack/sec, no miss
 
 ### Phase R — Combat & lose conditions
 
-- [ ] **T-170** — Melee/ranged unified: apply damage on attack tick
+- [X] **T-170** — Melee/ranged unified: apply damage on attack tick
 - [ ] **T-171** — Central building destroyed → game over
 - [ ] **T-172** — All people dead → game over
 
@@ -988,3 +988,4 @@ Death), multi-agent independent counters, death handling. Verification: agents a
 
 - 2026-04-21 | T-153 | **Implemented tower stats.** Added tower combat constants and helpers in `TowerCombatSystem`: max HP 100, base damage 1, upgraded damage 2, and 1-second attack cadence. Added `Building.HitPoints` initialization for towers so tower instances start at 100 HP. Added tests covering base stats, upgraded damage, and the 10-second kill check against a 10 HP target. Files: `TowerCombatSystem.cs`, `BuildingPlacement.cs`, `TowerCombatSystemTests.cs`.
 - 2026-04-21 | T-154 | **Implemented soldier mode split switching.** Added `SoldierMode` to `Agent`, a `SoldierModeSwitchSystem` that balances patrolling vs improving with a target share, threshold, and per-soldier cooldown, plus tests covering convergence, cooldown behavior, and mode counting. Also reset soldiers to patrolling when profession assignment or profession switching creates a soldier. Files: `Agent.cs`, `ProfessionAssignmentSystem.cs`, `ProfessionSwitchSystem.cs`, `SoldierModeSwitchSystem.cs`, `SoldierModeSwitchSystemTests.cs`.
+- 2026-04-21 | T-162 | `Assets/Civilizator/Simulation/Enemy.cs`, `Assets/Civilizator/Simulation/EnemyCombatSystem.cs`, `Assets/Civilizator/Tests/Simulation/EnemyCombatSystemTests.cs` — Enemy combat stats already matched V1 (HP 10, damage 1, 1-second cadence, attacks never miss).

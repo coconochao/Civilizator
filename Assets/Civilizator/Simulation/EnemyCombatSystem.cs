@@ -21,7 +21,7 @@ namespace Civilizator.Simulation
         /// <summary>
         /// Enemy attack cadence in seconds.
         /// </summary>
-        public const float AttackIntervalSeconds = 1f;
+        public const float AttackIntervalSeconds = CombatSystem.AttackIntervalSeconds;
 
         /// <summary>
         /// Enemy attacks are deterministic and cannot miss in V1.
@@ -77,10 +77,7 @@ namespace Civilizator.Simulation
         /// </summary>
         public static void ApplyAttack(Agent target)
         {
-            if (target == null)
-                throw new ArgumentNullException(nameof(target));
-
-            target.HitPoints = Math.Max(0, target.HitPoints - EnemyDamage);
+            CombatSystem.ApplyAttackTick(target, EnemyDamage);
         }
 
         /// <summary>
@@ -88,10 +85,15 @@ namespace Civilizator.Simulation
         /// </summary>
         public static void ApplyAttack(Enemy target)
         {
-            if (target == null)
-                throw new ArgumentNullException(nameof(target));
+            CombatSystem.ApplyAttackTick(target, EnemyDamage);
+        }
 
-            target.HitPoints = Math.Max(0, target.HitPoints - EnemyDamage);
+        /// <summary>
+        /// Applies the enemy's fixed attack damage to the given building.
+        /// </summary>
+        public static void ApplyAttack(Building target)
+        {
+            CombatSystem.ApplyAttackTick(target, EnemyDamage);
         }
     }
 }

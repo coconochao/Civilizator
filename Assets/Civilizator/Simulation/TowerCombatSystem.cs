@@ -28,7 +28,7 @@ namespace Civilizator.Simulation
         /// <summary>
         /// Tower attack cadence in seconds.
         /// </summary>
-        public const float AttackIntervalSeconds = 1f;
+        public const float AttackIntervalSeconds = CombatSystem.AttackIntervalSeconds;
 
         /// <summary>
         /// Returns true when the tower can fire.
@@ -161,6 +161,20 @@ namespace Civilizator.Simulation
 
             return enemyPosition.X >= minX && enemyPosition.X <= maxX &&
                    enemyPosition.Y >= minY && enemyPosition.Y <= maxY;
+        }
+
+        /// <summary>
+        /// Applies the tower's attack damage to an enemy target.
+        /// Call this when the tower's attack tick resolves.
+        /// </summary>
+        public static void ApplyAttack(Building tower, Enemy target)
+        {
+            if (tower == null)
+                throw new ArgumentNullException(nameof(tower));
+            if (tower.Kind != BuildingKind.Tower)
+                throw new ArgumentException("Tower attacks require a tower building.", nameof(tower));
+
+            CombatSystem.ApplyAttackTick(target, GetTowerDamage(tower));
         }
     }
 }

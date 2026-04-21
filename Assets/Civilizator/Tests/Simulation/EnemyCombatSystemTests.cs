@@ -41,5 +41,20 @@ namespace Civilizator.Simulation.Tests
             Assert.AreEqual(0, target.HitPoints);
             Assert.IsFalse(target.IsAlive);
         }
+
+        [Test]
+        public void ApplyAttack_CanDamageBuildingsUsingTheSharedCombatPipeline()
+        {
+            var target = new Building(BuildingKind.House, new GridPos(0, 0))
+            {
+                HitPoints = 2
+            };
+
+            EnemyCombatSystem.ApplyAttack(target);
+
+            Assert.AreEqual(1, target.HitPoints);
+            EnemyCombatSystem.ApplyAttack(target);
+            Assert.AreEqual(0, target.HitPoints);
+        }
     }
 }
