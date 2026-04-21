@@ -15,6 +15,13 @@ namespace Civilizator.Simulation
         public int UpgradeLevel { get; set; }
 
         /// <summary>
+        /// Current hit points for the building.
+        /// Tower construction initializes this to the tower's maximum HP.
+        /// Other building types default to 0 for now and can be set by later combat tasks.
+        /// </summary>
+        public int HitPoints { get; set; }
+
+        /// <summary>
         /// Construction progress: total delivered build resources (integer).
         /// For a new building: progress goes from 0 to required cost.
         /// For an upgrade: progress goes from 0 to required upgrade cost.
@@ -55,6 +62,7 @@ namespace Civilizator.Simulation
             Anchor = anchor;
             IsUnderConstruction = false;
             UpgradeLevel = 0;
+            HitPoints = kind == BuildingKind.Tower ? TowerCombatSystem.TowerMaxHitPoints : 0;
             ConstructionProgress = 0;
             BuildTimeEndSeconds = 0f;
             SimulationClock = null;
