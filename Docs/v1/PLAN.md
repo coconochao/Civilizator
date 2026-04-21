@@ -169,12 +169,12 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-152** — Tower: needs soldier inside to fire; 6×6 hit area (2 tiles each direction from 2×2 center)
 - [x] **T-153** — Tower damage 1 base / 2 upgraded; 1 attack/sec; HP 100
 - [x] **T-154** — Soldier mode split player %; periodic switch one-at-a-time + cooldown
-- [ ] **T-155** — Soldier improve: towers 100 Ore; player emphasis control hook
+- [x] **T-155** — Soldier improve: towers 100 Ore; player emphasis control hook
 
 ### Phase Q — Enemies
 
-- [ ] **T-160** — Spawn schedule: first at cycle 10, +1 every 10 cycles cumulative; spawn at map edges
-- [ ] **T-161** — Enemy movement 4-way; targeting priority order per SPEC
+- [x] **T-160** — Spawn schedule: first at cycle 10, +1 every 10 cycles cumulative; spawn at map edges
+- [x] **T-161** — Enemy movement 4-way; targeting priority order per SPEC
 - [ ] **T-162** — Enemy stats: HP 10, damage 1, 1 attack/sec, no miss
 
 ### Phase R — Combat & lose conditions
@@ -911,6 +911,10 @@ Each task: **Spec reference**, **Do**, **Verification**.
 ## Implementation log
 
 _Append one line per completed task (optional but recommended)._
+
+- 2026-04-21 — T-155 — `Assets/Civilizator/Simulation/SoldierImprovementSystem.cs`, `Assets/Civilizator/Tests/Simulation/SoldierImprovementSystemTests.cs` — Soldier tower improvement already uses Ore and the emphasis control hook; verified against the existing regression tests.
+- 2026-04-21 — T-160 — `Assets/Civilizator/Simulation/Enemy.cs`, `Assets/Civilizator/Simulation/EnemySpawner.cs`, `Assets/Civilizator/Tests/Simulation/EnemySpawnerTests.cs` — Enemy spawning is cumulative by cycle (cycle 10 = 1, cycle 20 = 2 total, etc.) and spawn positions are edge tiles only.
+- 2026-04-21 — T-161 — `Assets/Civilizator/Simulation/EnemyAISystem.cs`, `Assets/Civilizator/Tests/Simulation/EnemyAISystemTests.cs` — Enemy target priority now prefers attacking people, then attacking towers, then nearest civilian/building, and movement advances one 4-way step via pathfinding.
 
 Format: `YYYY-MM-DD | T-xxx | note`
 
