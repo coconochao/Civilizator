@@ -2,15 +2,14 @@ namespace Civilizator.Simulation
 {
     /// <summary>
     /// Represents an enemy unit in the simulation.
-    /// Enemy HP and combat behavior are handled by later tasks;
-    /// this model exists now so spawn cadence can be tested independently.
+    /// Enemy combat defaults live in EnemyCombatSystem.
     /// </summary>
     public class Enemy
     {
         /// <summary>
         /// Default hit points for newly spawned enemies.
         /// </summary>
-        public const int DefaultHitPoints = 10;
+        public const int DefaultHitPoints = EnemyCombatSystem.EnemyMaxHitPoints;
 
         /// <summary>
         /// Unique identifier for this enemy.
