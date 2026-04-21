@@ -164,8 +164,8 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase P — Soldiers & towers
 
-- [ ] **T-150** — Built-area radius = max Manhattan from central to any building tile
-- [ ] **T-151** — Patrol positions on perimeter diamond; round-robin assignment
+- [x] **T-150** — Built-area radius = max Manhattan from central to any building tile
+- [x] **T-151** — Patrol positions on perimeter diamond; round-robin assignment
 - [ ] **T-152** — Tower: needs soldier inside to fire; 6×6 hit area (2 tiles each direction from 2×2 center)
 - [ ] **T-153** — Tower damage 1 base / 2 upgraded; 1 attack/sec; HP 100
 - [ ] **T-154** — Soldier mode split player %; periodic switch one-at-a-time + cooldown
@@ -694,11 +694,15 @@ Each task: **Spec reference**, **Do**, **Verification**.
 
 #### T-150 — Built-area radius
 
+- [x] Implemented `BuiltAreaSystem.GetBuiltAreaRadius(...)` with central-footprint distance calculation.
+
 - **Spec reference:** Soldier (`SPEC.md`).
 - **Do:** Compute max Manhattan from central footprint to any occupied building tile.
 - **Verification:** Adding building increases radius test.
 
 #### T-151 — Patrol positions
+
+- [x] Implemented `SoldierPatrolSystem.GetPatrolPositions(...)` and round-robin `AssignPatrolPositions(...)`.
 
 - **Spec reference:** Soldier (`SPEC.md`).
 - **Do:** Diamond perimeter sampling; round-robin.
