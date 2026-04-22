@@ -16,7 +16,7 @@ namespace Civilizator.Simulation
 
         /// <summary>
         /// Current hit points for the building.
-        /// Tower construction initializes this to the tower's maximum HP.
+        /// Towers and the central building initialize this to the shared combat HP value.
         /// Other building types default to 0 for now and can be set by later combat tasks.
         /// </summary>
         public int HitPoints { get; set; }
@@ -62,7 +62,9 @@ namespace Civilizator.Simulation
             Anchor = anchor;
             IsUnderConstruction = false;
             UpgradeLevel = 0;
-            HitPoints = kind == BuildingKind.Tower ? TowerCombatSystem.TowerMaxHitPoints : 0;
+            HitPoints = kind == BuildingKind.Tower || kind == BuildingKind.Central
+                ? TowerCombatSystem.TowerMaxHitPoints
+                : 0;
             ConstructionProgress = 0;
             BuildTimeEndSeconds = 0f;
             SimulationClock = null;

@@ -180,8 +180,8 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 ### Phase R — Combat & lose conditions
 
 - [X] **T-170** — Melee/ranged unified: apply damage on attack tick
-- [ ] **T-171** — Central building destroyed → game over
-- [ ] **T-172** — All people dead → game over
+- [x] **T-171** — Central building destroyed → game over
+- [x] **T-172** — All people dead → game over
 
 ### Phase S — Player controls (data layer)
 
@@ -915,6 +915,8 @@ _Append one line per completed task (optional but recommended)._
 - 2026-04-21 — T-155 — `Assets/Civilizator/Simulation/SoldierImprovementSystem.cs`, `Assets/Civilizator/Tests/Simulation/SoldierImprovementSystemTests.cs` — Soldier tower improvement already uses Ore and the emphasis control hook; verified against the existing regression tests.
 - 2026-04-21 — T-160 — `Assets/Civilizator/Simulation/Enemy.cs`, `Assets/Civilizator/Simulation/EnemySpawner.cs`, `Assets/Civilizator/Tests/Simulation/EnemySpawnerTests.cs` — Enemy spawning is cumulative by cycle (cycle 10 = 1, cycle 20 = 2 total, etc.) and spawn positions are edge tiles only.
 - 2026-04-21 — T-161 — `Assets/Civilizator/Simulation/EnemyAISystem.cs`, `Assets/Civilizator/Tests/Simulation/EnemyAISystemTests.cs` — Enemy target priority now prefers attacking people, then attacking towers, then nearest civilian/building, and movement advances one 4-way step via pathfinding.
+- 2026-04-21 — T-171 — `Assets/Civilizator/Simulation/GameOverState.cs`, `Assets/Civilizator/Simulation/BuildingPlacement.cs`, `Assets/Civilizator/Tests/Simulation/GameOverStateTests.cs` — Central building defeat is tracked by `GameOverState`; the central building starts with combat HP and flips the game-over flag at 0 HP.
+- 2026-04-22 — T-172 — `Assets/Civilizator/Simulation/GameOverState.cs`, `Assets/Civilizator/Tests/Simulation/GameOverStateTests.cs` — Population wipeout is tracked by `GameOverState`; null agents are ignored and the game-over flag flips only when no living agents remain.
 
 Format: `YYYY-MM-DD | T-xxx | note`
 
