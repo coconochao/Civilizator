@@ -204,7 +204,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 - [x] **T-200** — Orthographic isometric camera rig
 - [x] **T-201** — Pan + zoom via Input System
-- [ ] **T-202** — Map/building/agent visual placeholders aligned to grid
+- [x] **T-202** — Map/building/agent visual placeholders aligned to grid
 - [ ] **T-203** — Simulation tick driver MonoBehaviour (advances clock, reads state)
 
 ### Phase V — Integration & vertical slice
@@ -923,6 +923,7 @@ _Append one line per completed task (optional but recommended)._
 - 2026-04-22 — T-193 — `Assets/Civilizator/UI/PopulationDisplay.cs`, `Assets/Civilizator/UI/PopulationDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/PopulationDisplayTests.cs`, `Assets/Civilizator/Tests/UI/PopulationDisplayTests.cs.meta` — Added a population HUD with child/adult/elder counts and total population, plus edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
 - 2026-04-22 — T-194 — `Assets/Civilizator/UI/HousingDisplay.cs`, `Assets/Civilizator/UI/HousingDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/HousingDisplayTests.cs`, `Assets/Civilizator/Tests/UI/HousingDisplayTests.cs.meta` — Added a housing coverage HUD with assigned/unassigned counts, an agent-list binding helper, and edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
 - 2026-04-22 — T-195 — `Assets/Civilizator/UI/ActivityBreakdownDisplay.cs`, `Assets/Civilizator/UI/ActivityBreakdownDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/ActivityBreakdownDisplayTests.cs`, `Assets/Civilizator/Tests/UI/ActivityBreakdownDisplayTests.cs.meta` — Added a per-profession activity HUD with live world-state derivation for producers, builders, soldiers, and staffed towers, plus edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
+- 2026-04-22 — T-202 — `Assets/Civilizator/Presentation/WorldPlaceholderView.cs`, `Assets/Civilizator/Presentation/WorldPlaceholderView.cs.meta`, `Assets/Civilizator/Tests/Presentation/WorldPlaceholderViewTests.cs`, `Assets/Civilizator/Tests/Presentation/WorldPlaceholderViewTests.cs.meta` — Added a runtime bootstrap that spawns grid-aligned placeholder floor, region grid, natural nodes, buildings, and agents using primitive meshes plus tile-to-world helpers and coverage for the coordinate math. Verified with headless Unity batchmode compile on `/tmp/civilizator-verify` (the main project was open, so I used a clean copy).
 
 Format: `YYYY-MM-DD | T-xxx | note`
 
