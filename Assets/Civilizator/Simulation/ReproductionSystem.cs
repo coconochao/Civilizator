@@ -14,7 +14,13 @@ namespace Civilizator.Simulation
         /// Global reproduction rate parameter controlled by the player.
         /// Represents the probability (0.0 to 1.0) that a breeding pair will produce a child per cycle.
         /// </summary>
-        public static float ReproductionRate { get; set; } = 0.5f;
+        private static float _reproductionRate = ReproductionSettings.DefaultReproductionRate;
+
+        public static float ReproductionRate
+        {
+            get => _reproductionRate;
+            set => SetReproductionRate(value);
+        }
 
         /// <summary>
         /// Random number generator for reproduction decisions.
@@ -30,6 +36,27 @@ namespace Civilizator.Simulation
         public static void SetSeed(int seed)
         {
             _random = new Random(seed);
+        }
+
+        /// <summary>
+        /// Sets the live reproduction rate after validating the value.
+        /// This is the preferred binding point for UI/config sliders.
+        /// </summary>
+        public static void SetReproductionRate(float reproductionRate)
+        {
+            ValidateReproductionRate(reproductionRate);
+            _reproductionRate = reproductionRate;
+        }
+
+        /// <summary>
+        /// Applies a settings object to the live reproduction system.
+        /// </summary>
+        public static void ApplySettings(ReproductionSettings settings)
+        {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+
+            SetReproductionRate(settings.ReproductionRate);
         }
 
         /// <summary>
@@ -50,7 +77,7 @@ namespace Civilizator.Simulation
             foreach (var house in eligibleHouses)
             {
                 // Roll for reproduction based on the global rate
-                if (_random.NextDouble() < ReproductionRate)
+                if (_random.NextDouble() < _reproductionRate)
                 {
                     var child = CreateChildForHouse(house, agents, createdChildrenCount);
                     newChildren.Add(child);
@@ -122,6 +149,15 @@ namespace Civilizator.Simulation
             house.AssignChildResident(child.Id);
 
             return child;
+        }
+
+        private static void ValidateReproductionRate(float reproductionRate)
+        {
+            if (float.IsNaN(reproductionRate) || float.IsInfinity(reproductionRate))
+                throw new ArgumentOutOfRangeException(nameof(reproductionRate), "Reproduction rate must be a finite number.");
+
+            if (reproductionRate < 0f || reproductionRate > 1f)
+                throw new ArgumentOutOfRangeException(nameof(reproductionRate), "Reproduction rate must be between 0 and 1.");
         }
     }
 }

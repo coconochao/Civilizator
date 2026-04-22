@@ -74,6 +74,37 @@ namespace Civilizator.Simulation.Tests
                 Assert.That(targets.GetTarget(p), Is.EqualTo(expected).Within(0.0001f));
             }
         }
+
+        [Test]
+        public void Constructor_WithSixValues_NormalizesToOne()
+        {
+            var targets = new ProfessionTargets(0.4f, 0.2f, 0.2f, 0.1f, 0.1f, 0.1f);
+
+            Assert.That(targets.GetSum(), Is.EqualTo(1f).Within(0.0001f));
+            Assert.That(targets.GetTarget(Profession.Woodcutter), Is.EqualTo(0.4f / 1.1f).Within(0.0001f));
+            Assert.That(targets.GetTarget(Profession.Miner), Is.EqualTo(0.2f / 1.1f).Within(0.0001f));
+            Assert.That(targets.GetTarget(Profession.Soldier), Is.EqualTo(0.1f / 1.1f).Within(0.0001f));
+        }
+
+        [Test]
+        public void SetTargets_WithIncorrectLength_ThrowsException()
+        {
+            var targets = new ProfessionTargets();
+
+            Assert.Throws<System.ArgumentException>(() =>
+                targets.SetTargets(0.5f, 0.5f, 0f));
+        }
+
+        [Test]
+        public void GetTargetsCopy_ReturnsIndependentArray()
+        {
+            var targets = new ProfessionTargets();
+            float[] copy = targets.GetTargetsCopy();
+            copy[(int)Profession.Woodcutter] = 0.9f;
+
+            Assert.That(targets.GetTarget(Profession.Woodcutter),
+                Is.EqualTo(ProfessionTargets.DefaultTargetPerProfession).Within(0.0001f));
+        }
     }
 
     /// <summary>

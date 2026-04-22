@@ -49,6 +49,8 @@ namespace Civilizator.Simulation
         /// </summary>
         public static void SetThresholds(Profession profession, float start, float stop)
         {
+            ValidateThresholdValue(start, nameof(start));
+            ValidateThresholdValue(stop, nameof(stop));
             if (start < 0f || start > 1f || stop < 0f || stop > 1f)
                 throw new ArgumentOutOfRangeException("Thresholds must be between 0 and 1.");
             if (start >= stop)
@@ -95,6 +97,12 @@ namespace Civilizator.Simulation
 
             // Hysteresis logic: below start threshold → produce; above stop threshold → improve
             return Math.Round(normalizedStock, 2) < Math.Round(thresholds.start, 2);
+        }
+
+        private static void ValidateThresholdValue(float value, string paramName)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                throw new ArgumentOutOfRangeException(paramName, "Threshold must be finite.");
         }
     }
 }

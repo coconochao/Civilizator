@@ -37,6 +37,48 @@ namespace Civilizator.Simulation.Tests
         }
 
         [Test]
+        public void ReproductionRate_ConfigObject_BindsToSimulation()
+        {
+            var settings = new ReproductionSettings(0.25f);
+
+            settings.ApplyToSimulation();
+
+            Assert.AreEqual(0.25f, ReproductionSystem.ReproductionRate);
+        }
+
+        [Test]
+        public void ReproductionRate_FromSimulation_ReflectsCurrentValue()
+        {
+            ReproductionSystem.ReproductionRate = 0.8f;
+
+            var settings = ReproductionSettings.FromSimulation();
+
+            Assert.AreEqual(0.8f, settings.ReproductionRate);
+        }
+
+        [Test]
+        public void ReproductionRate_RejectsInvalidValues()
+        {
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                ReproductionSystem.ReproductionRate = -0.01f);
+
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                ReproductionSystem.ReproductionRate = 1.01f);
+        }
+
+        [Test]
+        public void ReproductionSettings_RejectsInvalidValues()
+        {
+            var settings = new ReproductionSettings();
+
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                settings.SetReproductionRate(float.NaN));
+
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                settings.SetReproductionRate(float.PositiveInfinity));
+        }
+
+        [Test]
         public void ReproductionRate_Zero_DisablesReproduction()
         {
             ReproductionSystem.ReproductionRate = 0f;
@@ -66,6 +108,12 @@ namespace Civilizator.Simulation.Tests
 
             var children = ReproductionSystem.ProcessReproduction(agents, buildings);
             Assert.AreEqual(1, children.Count, "100% reproduction rate should always produce a child");
+        }
+
+        [Test]
+        public void ApplySettings_Null_Throws()
+        {
+            Assert.Throws<System.ArgumentNullException>(() => ReproductionSystem.ApplySettings(null));
         }
 
         #endregion

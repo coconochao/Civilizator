@@ -6,19 +6,31 @@ namespace Civilizator.Simulation
     /// Configuration for profession distribution targets.
     /// Stores the target percentage for each profession (should sum to 1.0 / 100%).
     /// </summary>
-    public class ProfessionTargets
+    [Serializable]
+    public sealed class ProfessionTargets
     {
         /// <summary>
         /// Default target distribution (equal split among all 6 professions).
         /// </summary>
-        public const float DefaultTargetPerProfession = 1f / 6f;
+        public const int ProfessionCount = 6;
+        public const float DefaultTargetPerProfession = 1f / ProfessionCount;
 
-        private float[] _targets;
+        private readonly float[] _targets;
 
         public ProfessionTargets()
         {
-            _targets = new float[6];
+            _targets = new float[ProfessionCount];
             SetAllToDefault();
+        }
+
+        /// <summary>
+        /// Creates a target set from six values in profession order.
+        /// The values may be provided as fractions that already sum to 1.0 or as
+        /// rough weights that will be normalized to 1.0.
+        /// </summary>
+        public ProfessionTargets(params float[] targets) : this()
+        {
+            SetTargets(targets);
         }
 
         /// <summary>
@@ -26,6 +38,7 @@ namespace Civilizator.Simulation
         /// </summary>
         public float GetTarget(Profession profession)
         {
+            ValidateProfession(profession);
             return _targets[(int)profession];
         }
 
@@ -34,9 +47,30 @@ namespace Civilizator.Simulation
         /// </summary>
         public void SetTarget(Profession profession, float value)
         {
-            if (value < 0f || value > 1f)
-                throw new ArgumentOutOfRangeException(nameof(value), "Target must be between 0 and 1");
+            ValidateProfession(profession);
+            ValidateTargetValue(value);
             _targets[(int)profession] = value;
+        }
+
+        /// <summary>
+        /// Replaces all profession targets using six values in profession order.
+        /// Values are normalized after validation, so the stored targets always sum to 1.0.
+        /// </summary>
+        public void SetTargets(params float[] targets)
+        {
+            if (targets == null)
+                throw new ArgumentNullException(nameof(targets));
+
+            if (targets.Length != ProfessionCount)
+                throw new ArgumentException($"Expected {ProfessionCount} target values, got {targets.Length}.", nameof(targets));
+
+            for (int i = 0; i < targets.Length; i++)
+            {
+                ValidateTargetValue(targets[i]);
+                _targets[i] = targets[i];
+            }
+
+            Normalize();
         }
 
         /// <summary>
@@ -48,6 +82,16 @@ namespace Civilizator.Simulation
             {
                 _targets[i] = DefaultTargetPerProfession;
             }
+        }
+
+        /// <summary>
+        /// Returns a copy of the current targets in profession order.
+        /// </summary>
+        public float[] GetTargetsCopy()
+        {
+            var copy = new float[ProfessionCount];
+            Array.Copy(_targets, copy, ProfessionCount);
+            return copy;
         }
 
         /// <summary>
@@ -82,6 +126,14 @@ namespace Civilizator.Simulation
         }
 
         /// <summary>
+        /// Returns true when the current target values already sum to approximately 1.0.
+        /// </summary>
+        public bool IsNormalized(float tolerance = 0.0001f)
+        {
+            return Math.Abs(GetSum() - 1f) <= tolerance;
+        }
+
+        /// <summary>
         /// Gets the sum of all target percentages.
         /// </summary>
         public float GetSum()
@@ -92,6 +144,22 @@ namespace Civilizator.Simulation
                 sum += _targets[i];
             }
             return sum;
+        }
+
+        private static void ValidateProfession(Profession profession)
+        {
+            int index = (int)profession;
+            if (index < 0 || index >= ProfessionCount)
+                throw new ArgumentOutOfRangeException(nameof(profession), profession, "Profession is out of range.");
+        }
+
+        private static void ValidateTargetValue(float value)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                throw new ArgumentOutOfRangeException(nameof(value), "Target must be a finite number.");
+
+            if (value < 0f || value > 1f)
+                throw new ArgumentOutOfRangeException(nameof(value), "Target must be between 0 and 1");
         }
     }
 }

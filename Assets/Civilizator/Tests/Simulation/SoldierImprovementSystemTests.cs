@@ -17,6 +17,7 @@ namespace Civilizator.Simulation.Tests
         {
             Assert.Throws<System.ArgumentOutOfRangeException>(() => SoldierImprovementControls.SetTowerBuildEmphasis(-0.1f));
             Assert.Throws<System.ArgumentOutOfRangeException>(() => SoldierImprovementControls.SetTowerBuildEmphasis(1.1f));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => SoldierImprovementControls.SetTowerBuildEmphasis(float.NaN));
         }
 
         [Test]

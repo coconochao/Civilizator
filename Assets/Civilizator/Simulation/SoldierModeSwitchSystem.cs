@@ -44,6 +44,8 @@ namespace Civilizator.Simulation
         /// </summary>
         public void SetPatrolTargetShare(float share)
         {
+            ValidateFraction(share, nameof(share));
+
             if (share < 0f || share > 1f)
                 throw new ArgumentOutOfRangeException(nameof(share), "Target share must be between 0 and 1");
 
@@ -55,6 +57,8 @@ namespace Civilizator.Simulation
         /// </summary>
         public void SetSwitchThreshold(float threshold)
         {
+            ValidateFraction(threshold, nameof(threshold));
+
             if (threshold < 0f || threshold > 1f)
                 throw new ArgumentOutOfRangeException(nameof(threshold), "Threshold must be between 0 and 1");
 
@@ -71,6 +75,21 @@ namespace Civilizator.Simulation
 
             _switchCooldownCycles = cycles;
         }
+
+        /// <summary>
+        /// Gets the current target share for soldiers in patrolling mode.
+        /// </summary>
+        public float PatrolTargetShare => _patrolTargetShare;
+
+        /// <summary>
+        /// Gets the current switching threshold.
+        /// </summary>
+        public float SwitchThreshold => _switchThreshold;
+
+        /// <summary>
+        /// Gets the current switch cooldown in cycles.
+        /// </summary>
+        public int SwitchCooldownCycles => _switchCooldownCycles;
 
         /// <summary>
         /// Advances the system by one cycle.
@@ -202,6 +221,12 @@ namespace Civilizator.Simulation
                 return true;
 
             return (_currentCycle - lastSwitch) >= _switchCooldownCycles;
+        }
+
+        private static void ValidateFraction(float value, string paramName)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                throw new ArgumentOutOfRangeException(paramName, "Value must be finite.");
         }
     }
 }

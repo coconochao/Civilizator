@@ -29,6 +29,9 @@ namespace Civilizator.Simulation
         /// </summary>
         public static void SetTowerBuildEmphasis(float value)
         {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                throw new ArgumentOutOfRangeException(nameof(value), "Tower build emphasis must be finite");
+
             if (value < 0f || value > 1f)
                 throw new ArgumentOutOfRangeException(nameof(value), "Tower build emphasis must be between 0 and 1");
 

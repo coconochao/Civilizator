@@ -185,10 +185,10 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase S — Player controls (data layer)
 
-- [ ] **T-180** — Data structures for profession target % (6 professions)
-- [ ] **T-181** — Reproduction rate parameter
-- [ ] **T-182** — Soldier patrol/improve split + tower emphasis parameters
-- [ ] **T-183** — Producer threshold pairs per profession
+- [x] **T-180** — Data structures for profession target % (6 professions)
+- [x] **T-181** — Reproduction rate parameter
+- [x] **T-182** — Soldier patrol/improve split + tower emphasis parameters
+- [x] **T-183** — Producer threshold pairs per profession
 
 ### Phase T — UI (must-haves)
 
@@ -990,4 +990,8 @@ Death), multi-agent independent counters, death handling. Verification: agents a
 
 - 2026-04-21 | T-153 | **Implemented tower stats.** Added tower combat constants and helpers in `TowerCombatSystem`: max HP 100, base damage 1, upgraded damage 2, and 1-second attack cadence. Added `Building.HitPoints` initialization for towers so tower instances start at 100 HP. Added tests covering base stats, upgraded damage, and the 10-second kill check against a 10 HP target. Files: `TowerCombatSystem.cs`, `BuildingPlacement.cs`, `TowerCombatSystemTests.cs`.
 - 2026-04-21 | T-154 | **Implemented soldier mode split switching.** Added `SoldierMode` to `Agent`, a `SoldierModeSwitchSystem` that balances patrolling vs improving with a target share, threshold, and per-soldier cooldown, plus tests covering convergence, cooldown behavior, and mode counting. Also reset soldiers to patrolling when profession assignment or profession switching creates a soldier. Files: `Agent.cs`, `ProfessionAssignmentSystem.cs`, `ProfessionSwitchSystem.cs`, `SoldierModeSwitchSystem.cs`, `SoldierModeSwitchSystemTests.cs`.
+- 2026-04-22 | T-180 | **Implemented profession target data structure upgrades.** Hardened `ProfessionTargets` as a sealed serializable container with six-profession validation, one-shot six-value construction/setting, normalization helpers, normalized-state checks, and copy-out access for future UI/config binding. Added tests covering normalization, input-length validation, and copy isolation. Files: `ProfessionTargets.cs`, `ProfessionAssignmentTests.cs`.
+- 2026-04-22 | T-181 | **Implemented reproduction rate binding.** Added `ReproductionSettings` as a serializable slider/config object, bridged it into `ReproductionSystem` via validation-backed setters and `ApplySettings(...)`, and added tests covering config round-tripping, invalid values, and null application. Files: `ReproductionSettings.cs`, `ReproductionSystem.cs`, `ReproductionSystemTests.cs`.
+- 2026-04-22 | T-182 | **Implemented soldier control bindings.** Added `SoldierControls` as a serializable configuration object for patrol/improve split plus tower emphasis, exposed current values from `SoldierModeSwitchSystem`, and added tests covering defaults, binding, round-tripping, and validation. Files: `SoldierControls.cs`, `SoldierModeSwitchSystem.cs`, `SoldierControlsTests.cs`.
+- 2026-04-22 | T-183 | **Implemented producer threshold bindings.** Added `ProducerThresholdSettings` and `ProducerThresholdPair` as serializable config data for four producer professions, plus validation-backed simulation binding and snapshot helpers. Hardened `ProducerThresholds.SetThresholds(...)` against NaN/Infinity. Added tests covering defaults, binding, round-tripping, invalid values, and non-producer rejection. Files: `ProducerThresholdSettings.cs`, `ProducerThresholds.cs`, `ProducerThresholdSettingsTests.cs`.
 - 2026-04-21 | T-162 | `Assets/Civilizator/Simulation/Enemy.cs`, `Assets/Civilizator/Simulation/EnemyCombatSystem.cs`, `Assets/Civilizator/Tests/Simulation/EnemyCombatSystemTests.cs` — Enemy combat stats already matched V1 (HP 10, damage 1, 1-second cadence, attacks never miss).
