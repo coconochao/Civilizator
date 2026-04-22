@@ -198,7 +198,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-193** — Population: children/adults/elders counts
 - [x] **T-194** — Housing: assigned vs unassigned counts
 - [x] **T-195** — Per profession activity: producing vs improving (+ soldier/tower staffing)
-- [ ] **T-196** — Productivity: average and/or by stage; starvation counts
+- [x] **T-196** — Productivity: average and/or by stage; starvation counts
 
 ### Phase U — Presentation & camera
 
@@ -1001,3 +1001,4 @@ Death), multi-agent independent counters, death handling. Verification: agents a
 - 2026-04-22 | T-182 | **Implemented soldier control bindings.** Added `SoldierControls` as a serializable configuration object for patrol/improve split plus tower emphasis, exposed current values from `SoldierModeSwitchSystem`, and added tests covering defaults, binding, round-tripping, and validation. Files: `SoldierControls.cs`, `SoldierModeSwitchSystem.cs`, `SoldierControlsTests.cs`.
 - 2026-04-22 | T-183 | **Implemented producer threshold bindings.** Added `ProducerThresholdSettings` and `ProducerThresholdPair` as serializable config data for four producer professions, plus validation-backed simulation binding and snapshot helpers. Hardened `ProducerThresholds.SetThresholds(...)` against NaN/Infinity. Added tests covering defaults, binding, round-tripping, invalid values, and non-producer rejection. Files: `ProducerThresholdSettings.cs`, `ProducerThresholds.cs`, `ProducerThresholdSettingsTests.cs`.
 - 2026-04-21 | T-162 | `Assets/Civilizator/Simulation/Enemy.cs`, `Assets/Civilizator/Simulation/EnemyCombatSystem.cs`, `Assets/Civilizator/Tests/Simulation/EnemyCombatSystemTests.cs` — Enemy combat stats already matched V1 (HP 10, damage 1, 1-second cadence, attacks never miss).
+- 2026-04-22 | T-196 | `Assets/Civilizator/UI/ProductivityDisplay.cs`, `Assets/Civilizator/UI/ProductivityDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/ProductivityDisplayTests.cs`, `Assets/Civilizator/Tests/UI/ProductivityDisplayTests.cs.meta` — Added a productivity/starvation HUD with overall and per-stage averages plus starvation counts, along with edit-mode coverage. Verification pending user-run Unity EditMode tests.
