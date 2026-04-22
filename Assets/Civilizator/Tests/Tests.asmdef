@@ -5,6 +5,7 @@
         "Civilizator.Simulation",
         "Civilizator.Presentation",
         "Civilizator.UI",
+        "Unity.InputSystem",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "nunit.framework"

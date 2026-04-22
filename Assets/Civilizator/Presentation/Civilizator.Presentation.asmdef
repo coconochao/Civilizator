@@ -2,7 +2,8 @@
     "name": "Civilizator.Presentation",
     "rootNamespace": "Civilizator.Presentation",
     "references": [
-        "Civilizator.Simulation"
+        "Civilizator.Simulation",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

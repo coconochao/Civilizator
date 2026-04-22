@@ -202,8 +202,8 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase U — Presentation & camera
 
-- [ ] **T-200** — Orthographic isometric camera rig
-- [ ] **T-201** — Pan + zoom via Input System
+- [x] **T-200** — Orthographic isometric camera rig
+- [x] **T-201** — Pan + zoom via Input System
 - [ ] **T-202** — Map/building/agent visual placeholders aligned to grid
 - [ ] **T-203** — Simulation tick driver MonoBehaviour (advances clock, reads state)
 
