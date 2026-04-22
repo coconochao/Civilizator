@@ -4,6 +4,7 @@
     "references": [
         "Civilizator.Simulation",
         "Civilizator.Presentation",
+        "Civilizator.UI",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "nunit.framework"

@@ -192,12 +192,12 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 ### Phase T — UI (must-haves)
 
-- [ ] **T-190** — Central stock display (4 resources)
-- [ ] **T-191** — Production rates (overall; optional per profession if timeboxed)
-- [ ] **T-192** — Profession target vs actual %
-- [ ] **T-193** — Population: children/adults/elders counts
-- [ ] **T-194** — Housing: assigned vs unassigned counts
-- [ ] **T-195** — Per profession activity: producing vs improving (+ soldier/tower staffing)
+- [x] **T-190** — Central stock display (4 resources)
+- [x] **T-191** — Production rates (overall; optional per profession if timeboxed)
+- [x] **T-192** — Profession target vs actual %
+- [x] **T-193** — Population: children/adults/elders counts
+- [x] **T-194** — Housing: assigned vs unassigned counts
+- [x] **T-195** — Per profession activity: producing vs improving (+ soldier/tower staffing)
 - [ ] **T-196** — Productivity: average and/or by stage; starvation counts
 
 ### Phase U — Presentation & camera
@@ -917,6 +917,12 @@ _Append one line per completed task (optional but recommended)._
 - 2026-04-21 — T-161 — `Assets/Civilizator/Simulation/EnemyAISystem.cs`, `Assets/Civilizator/Tests/Simulation/EnemyAISystemTests.cs` — Enemy target priority now prefers attacking people, then attacking towers, then nearest civilian/building, and movement advances one 4-way step via pathfinding.
 - 2026-04-21 — T-171 — `Assets/Civilizator/Simulation/GameOverState.cs`, `Assets/Civilizator/Simulation/BuildingPlacement.cs`, `Assets/Civilizator/Tests/Simulation/GameOverStateTests.cs` — Central building defeat is tracked by `GameOverState`; the central building starts with combat HP and flips the game-over flag at 0 HP.
 - 2026-04-22 — T-172 — `Assets/Civilizator/Simulation/GameOverState.cs`, `Assets/Civilizator/Tests/Simulation/GameOverStateTests.cs` — Population wipeout is tracked by `GameOverState`; null agents are ignored and the game-over flag flips only when no living agents remain.
+- 2026-04-22 — T-190 — `Assets/Civilizator/UI/CentralStockDisplay.cs`, `Assets/Civilizator/UI/CentralStockDisplay.cs.meta`, `Assets/Civilizator/UI/Civilizator.UI.asmdef`, `Assets/Civilizator/Tests/UI/CentralStockDisplayTests.cs`, `Assets/Civilizator/Tests/UI/CentralStockDisplayTests.cs.meta`, `Assets/Civilizator/Tests/UI.meta`, `Assets/Civilizator/Tests/Tests.asmdef` — Added a minimal uGUI stock HUD with binding/formatting helpers and edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` because the main project was open in the editor.
+- 2026-04-22 — T-191 — `Assets/Civilizator/UI/ProductionRateDisplay.cs`, `Assets/Civilizator/UI/ProductionRateDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/ProductionRateDisplayTests.cs`, `Assets/Civilizator/Tests/UI/ProductionRateDisplayTests.cs.meta` — Added a uGUI production-rate HUD with overall + per-profession breakdown, invariant-culture formatting, and edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
+- 2026-04-22 — T-192 — `Assets/Civilizator/UI/ProfessionAllocationDisplay.cs`, `Assets/Civilizator/UI/ProfessionAllocationDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/ProfessionAllocationDisplayTests.cs`, `Assets/Civilizator/Tests/UI/ProfessionAllocationDisplayTests.cs.meta` — Added a profession allocation HUD with target sliders and actual percentage readouts, plus invariant-culture formatting and edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
+- 2026-04-22 — T-193 — `Assets/Civilizator/UI/PopulationDisplay.cs`, `Assets/Civilizator/UI/PopulationDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/PopulationDisplayTests.cs`, `Assets/Civilizator/Tests/UI/PopulationDisplayTests.cs.meta` — Added a population HUD with child/adult/elder counts and total population, plus edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
+- 2026-04-22 — T-194 — `Assets/Civilizator/UI/HousingDisplay.cs`, `Assets/Civilizator/UI/HousingDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/HousingDisplayTests.cs`, `Assets/Civilizator/Tests/UI/HousingDisplayTests.cs.meta` — Added a housing coverage HUD with assigned/unassigned counts, an agent-list binding helper, and edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
+- 2026-04-22 — T-195 — `Assets/Civilizator/UI/ActivityBreakdownDisplay.cs`, `Assets/Civilizator/UI/ActivityBreakdownDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/ActivityBreakdownDisplayTests.cs`, `Assets/Civilizator/Tests/UI/ActivityBreakdownDisplayTests.cs.meta` — Added a per-profession activity HUD with live world-state derivation for producers, builders, soldiers, and staffed towers, plus edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
 
 Format: `YYYY-MM-DD | T-xxx | note`
 

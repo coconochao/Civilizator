@@ -3,6 +3,7 @@
     "rootNamespace": "Civilizator.UI",
     "references": [
         "Civilizator.Presentation",
+        "Civilizator.Simulation",
         "UnityEngine.UI",
         "Unity.InputSystem",
         "Unity.InputSystem.ForUI"
