@@ -194,5 +194,25 @@ namespace Civilizator.Simulation
 
             return nearest;
         }
+
+        /// <summary>
+        /// Updates enemy movement toward targets.
+        /// </summary>
+        public static void UpdateEnemy(Enemy enemy, IEnumerable<Agent> agents, IEnumerable<Building> buildings, Building central, GridOccupancy occupancy, float deltaTime)
+        {
+            if (enemy == null || !enemy.IsAlive)
+                return;
+
+            // Simple movement: move toward central building if no other target
+            var target = central?.Anchor ?? enemy.Position;
+            if (enemy.Position != target)
+            {
+                var path = Pathfinding.FindPath(enemy.Position, target, occupancy);
+                if (path.Count >= 2)
+                {
+                    enemy.Position = path[1];
+                }
+            }
+        }
     }
 }

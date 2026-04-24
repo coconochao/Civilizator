@@ -176,5 +176,14 @@ namespace Civilizator.Simulation
 
             CombatSystem.ApplyAttackTick(target, GetTowerDamage(tower));
         }
+
+        /// <summary>
+        /// Updates tower combat against enemies.
+        /// </summary>
+        public static void UpdateTowerCombat(IEnumerable<Building> buildings, IEnumerable<Agent> agents, IEnumerable<Enemy> enemies, SimulationClock clock, float deltaTime)
+        {
+            // Placeholder for tower combat logic
+            // Will be implemented in later tasks
+        }
     }
 }

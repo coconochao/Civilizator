@@ -62,6 +62,13 @@ namespace Civilizator.Simulation
         /// </summary>
         public List<int> ChildResidentIds { get; } = new List<int>();
 
+        /// <summary>
+        /// Tracks whether this house has already had residents assigned upon completion.
+        /// Used to prevent duplicate assignment when the house becomes complete.
+        /// Only meaningful for houses.
+        /// </summary>
+        public bool WasAssignedOnCompletion { get; set; } = false;
+
         public Building(BuildingKind kind, GridPos anchor, int id = 0)
         {
             Id = id;

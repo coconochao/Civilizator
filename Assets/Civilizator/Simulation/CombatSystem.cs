@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Civilizator.Simulation
 {
@@ -69,6 +70,15 @@ namespace Civilizator.Simulation
         {
             if (damage < 0)
                 throw new ArgumentOutOfRangeException(nameof(damage), "Damage must be non-negative.");
+        }
+
+        /// <summary>
+        /// Updates soldier combat against enemies.
+        /// </summary>
+        public static void UpdateSoldierCombat(IEnumerable<Agent> agents, IEnumerable<Enemy> enemies, SimulationClock clock, float deltaTime)
+        {
+            // Placeholder for soldier combat logic
+            // Will be implemented in later tasks
         }
     }
 }

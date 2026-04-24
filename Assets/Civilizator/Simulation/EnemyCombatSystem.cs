@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Civilizator.Simulation
 {
@@ -94,6 +95,15 @@ namespace Civilizator.Simulation
         public static void ApplyAttack(Building target)
         {
             CombatSystem.ApplyAttackTick(target, EnemyDamage);
+        }
+
+        /// <summary>
+        /// Updates enemy combat against agents and buildings.
+        /// </summary>
+        public static void UpdateEnemyCombat(IEnumerable<Enemy> enemies, IEnumerable<Agent> agents, Building central, SimulationClock clock, float deltaTime)
+        {
+            // Placeholder for enemy combat logic
+            // Will be implemented in later tasks
         }
     }
 }

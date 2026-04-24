@@ -24,15 +24,17 @@ namespace Civilizator.Presentation
         {
             World = new World();
             World.Initialize();
+            World.InitializeGameSetup();
             Facade = new SimulationFacade(World);
-        }   
+        }
 
         private void Start()
         {
             // Initialize the world if not already set (allows injection for testing)
             World ??= new World();
             World.Initialize();
-            
+            World.InitializeGameSetup();
+
             // Create the façade for UI read-only access
             Facade = new SimulationFacade(World);
         }
