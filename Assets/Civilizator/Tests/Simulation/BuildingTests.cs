@@ -17,6 +17,16 @@ namespace Civilizator.Simulation.Tests
             Assert.AreEqual(0, building.UpgradeLevel);
             Assert.IsFalse(building.IsUnderConstruction);
             Assert.AreEqual(0, building.ConstructionProgress);
+            Assert.AreEqual(0, building.Id);
+        }
+
+        [Test]
+        public void Constructor_WithId_SetsIdCorrectly()
+        {
+            var anchor = new GridPos(5, 10);
+            var building = new Building(BuildingKind.House, anchor, id: 42);
+
+            Assert.AreEqual(42, building.Id);
         }
 
         [Test]

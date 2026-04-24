@@ -205,7 +205,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-200** — Orthographic isometric camera rig
 - [x] **T-201** — Pan + zoom via Input System
 - [x] **T-202** — Map/building/agent visual placeholders aligned to grid
-- [ ] **T-203** — Simulation tick driver MonoBehaviour (advances clock, reads state)
+- [x] **T-203** — Simulation tick driver MonoBehaviour (advances clock, reads state)
 
 ### Phase V — Integration & vertical slice
 

@@ -9,6 +9,12 @@ namespace Civilizator.Simulation
     /// </summary>
     public class Building
     {
+        /// <summary>
+        /// Unique identifier for this building.
+        /// Assigned at creation and never changes.
+        /// </summary>
+        public int Id { get; }
+
         public BuildingKind Kind { get; }
         public GridPos Anchor { get; }
         public bool IsUnderConstruction { get; set; }
@@ -56,8 +62,9 @@ namespace Civilizator.Simulation
         /// </summary>
         public List<int> ChildResidentIds { get; } = new List<int>();
 
-        public Building(BuildingKind kind, GridPos anchor)
+        public Building(BuildingKind kind, GridPos anchor, int id = 0)
         {
+            Id = id;
             Kind = kind;
             Anchor = anchor;
             IsUnderConstruction = false;
