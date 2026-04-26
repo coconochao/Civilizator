@@ -346,6 +346,13 @@ namespace Civilizator.Simulation
         {
             var building = new Building(kind, anchor, nextBuildingId++);
             Buildings.Add(building);
+
+            // Initialize construction state for non-Central buildings
+            if (kind != BuildingKind.Central)
+            {
+                building.IsUnderConstruction = true;
+                building.SimulationClock = Clock;
+            }
             
             // Update occupancy
             var occupiedTiles = new List<GridPos>();
@@ -415,8 +422,6 @@ namespace Civilizator.Simulation
             if (central == null)
                 return;
 
-            GridPos centralPos = central.Anchor;
-
             foreach (var agent in Agents)
             {
                 if (!agent.IsAlive)
@@ -428,28 +433,29 @@ namespace Civilizator.Simulation
                     AgentActionStates[agent] = actionState;
                 }
 
-                UpdateAgentAction(agent, actionState, deltaTime, centralPos);
+                UpdateAgentAction(agent, actionState, deltaTime, central);
             }
         }
 
         /// <summary>
         /// Updates a single agent's action based on their profession.
         /// </summary>
-        private void UpdateAgentAction(Agent agent, AgentActionState state, float deltaTime, GridPos centralPos)
+        private void UpdateAgentAction(Agent agent, AgentActionState state, float deltaTime, Building central)
         {
+            GridPos centralPos = central.Anchor;
             switch (agent.Profession)
             {
                 case Profession.Woodcutter:
                 case Profession.Miner:
                 case Profession.Hunter:
                 case Profession.Farmer:
-                    UpdateProducerAgent(agent, state, deltaTime, centralPos);
+                    UpdateProducerAgent(agent, state, deltaTime, central);
                     break;
                 case Profession.Builder:
-                    UpdateBuilderAgent(agent, state, deltaTime, centralPos);
+                    UpdateBuilderAgent(agent, state, deltaTime, central);
                     break;
                 case Profession.Soldier:
-                    UpdateSoldierAgent(agent, state, deltaTime, centralPos);
+                    UpdateSoldierAgent(agent, state, deltaTime, central);
                     break;
             }
         }
@@ -457,8 +463,9 @@ namespace Civilizator.Simulation
         /// <summary>
         /// Updates producer agents (woodcutter, miner, hunter, farmer).
         /// </summary>
-        private void UpdateProducerAgent(Agent agent, AgentActionState state, float deltaTime, GridPos centralPos)
+        private void UpdateProducerAgent(Agent agent, AgentActionState state, float deltaTime, Building central)
         {
+            GridPos centralPos = central.Anchor;
             // Check if agent needs to eat
             if (!agent.HasEatenThisCycle && state.EatingAction == null)
             {
@@ -487,12 +494,12 @@ namespace Civilizator.Simulation
             if (!shouldImprove)
             {
                 // Production loop
-                UpdateProductionLoop(agent, state, deltaTime, nearestNode, centralPos);
+                UpdateProductionLoop(agent, state, deltaTime, nearestNode, central);
             }
             else
             {
                 // Improvement loop
-                UpdateImprovementLoop(agent, state, deltaTime, centralPos, 
+                UpdateImprovementLoop(agent, state, deltaTime, central, 
                     ProductionSystem.GetRequiredBuildingForProfession(agent.Profession));
             }
         }
@@ -500,12 +507,13 @@ namespace Civilizator.Simulation
         /// <summary>
         /// Updates the production loop for an agent.
         /// </summary>
-        private void UpdateProductionLoop(Agent agent, AgentActionState state, float deltaTime, NaturalNode targetNode, GridPos centralPos)
+        private void UpdateProductionLoop(Agent agent, AgentActionState state, float deltaTime, NaturalNode targetNode, Building central)
         {
+            GridPos centralPos = central.Anchor;
             if (targetNode == null)
             {
                 // No nodes available, switch to improvement
-                UpdateImprovementLoop(agent, state, deltaTime, centralPos, 
+                UpdateImprovementLoop(agent, state, deltaTime, central, 
                     ProductionSystem.GetRequiredBuildingForProfession(agent.Profession));
                 return;
             }
@@ -536,17 +544,18 @@ namespace Civilizator.Simulation
             }
 
             // If at central with resources, deposit
-            if (agent.CarriedResources > 0 && ProductionSystem.IsAtCentralStorage(agent))
+            if (agent.CarriedResources > 0 && ProductionSystem.IsAtCentralStorage(agent, central))
             {
-                ProductionSystem.DepositCarriedResources(agent, Storage);
+                ProductionSystem.DepositCarriedResources(agent, Storage, central);
             }
         }
 
         /// <summary>
         /// Updates the improvement loop for an agent.
         /// </summary>
-        private void UpdateImprovementLoop(Agent agent, AgentActionState state, float deltaTime, GridPos centralPos, BuildingKind targetKind)
+        private void UpdateImprovementLoop(Agent agent, AgentActionState state, float deltaTime, Building central, BuildingKind targetKind)
         {
+            GridPos centralPos = central.Anchor;
             // If carrying resources, deliver to building
             if (agent.CarriedResources > 0)
             {
@@ -579,9 +588,9 @@ namespace Civilizator.Simulation
 
                 if (state.CurrentTargetBuilding != null)
                 {
-                    if (ProductionSystem.IsAtCentralStorage(agent))
+                    if (ProductionSystem.IsAtCentralStorage(agent, central))
                     {
-                        ProductionSystem.WithdrawResourcesForImprovement(agent, state.CurrentTargetBuilding, Storage);
+                        ProductionSystem.WithdrawResourcesForImprovement(agent, state.CurrentTargetBuilding, Storage, central);
                     }
                     else
                     {
@@ -600,8 +609,9 @@ namespace Civilizator.Simulation
         /// <summary>
         /// Updates builder agents.
         /// </summary>
-        private void UpdateBuilderAgent(Agent agent, AgentActionState state, float deltaTime, GridPos centralPos)
+        private void UpdateBuilderAgent(Agent agent, AgentActionState state, float deltaTime, Building central)
         {
+            GridPos centralPos = central.Anchor;
             // Check if agent needs to eat
             if (!agent.HasEatenThisCycle && state.EatingAction == null)
             {
@@ -622,18 +632,15 @@ namespace Civilizator.Simulation
 
             // Builders only do improvement work
             var target = BuilderSystem.FindBestImprovementTarget(agent, Agents, Buildings, Storage, ProfessionTargets);
-            UpdateImprovementLoop(agent, state, deltaTime, centralPos, target?.Kind ?? BuildingKind.House);
+            UpdateImprovementLoop(agent, state, deltaTime, central, target?.Kind ?? BuildingKind.House);
         }
 
         /// <summary>
         /// Updates soldier agents.
         /// </summary>
-        private void UpdateSoldierAgent(Agent agent, AgentActionState state, float deltaTime, GridPos centralPos)
+        private void UpdateSoldierAgent(Agent agent, AgentActionState state, float deltaTime, Building central)
         {
-            var central = GetCentralBuilding();
-            if (central == null)
-                return;
-
+            GridPos centralPos = central.Anchor;
             if (agent.SoldierMode == SoldierMode.Patrolling)
             {
                 // Patrol mode: move to assigned patrol position
@@ -664,7 +671,7 @@ namespace Civilizator.Simulation
             else
             {
                 // Improve mode: build towers
-                UpdateImprovementLoop(agent, state, deltaTime, centralPos, BuildingKind.Tower);
+                UpdateImprovementLoop(agent, state, deltaTime, central, BuildingKind.Tower);
             }
         }
 

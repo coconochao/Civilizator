@@ -80,6 +80,7 @@ namespace Civilizator.Simulation.Tests
             {
                 IsUnderConstruction = true
             };
+            var centralBuilding = new Building(BuildingKind.Central, new GridPos(47, 47));
 
             var buildings = new List<Building> { target };
             var storage = new CentralStorage();
@@ -90,7 +91,7 @@ namespace Civilizator.Simulation.Tests
             Assert.That(SoldierImprovementSystem.GetTowerImprovementResourceKind(), Is.EqualTo(ResourceKind.Ore));
 
             int oreBefore = storage.GetStock(ResourceKind.Ore);
-            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(soldier, selected, storage);
+            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(soldier, selected, storage, centralBuilding);
             int oreAfter = storage.GetStock(ResourceKind.Ore);
 
             Assert.That(withdrawn, Is.GreaterThan(0));

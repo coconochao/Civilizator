@@ -200,9 +200,9 @@ namespace Civilizator.Simulation.Tests
             
             // Act - Set low stop threshold to force improvement
             ProducerThresholds.SetThresholds(
-                Profession.Woodcutter, 
-                0.1f, 
-                0.8f);
+                Profession.Woodcutter,
+                0.01f,
+                0.05f);
             
             float simulationTime = 60f;
             float deltaTime = 0.1f;
@@ -245,18 +245,18 @@ namespace Civilizator.Simulation.Tests
             
             // Manually deliver resources to test build-time gating
             builder.Position = new GridPos(46, 46); // At building site
-            builder.CarriedResources = 10;
+            builder.CarriedResources = BuildingCostHelper.CivilBuildingBuildCost;
             ProductionSystem.DeliverResourcesToBuilding(builder, house, world.Clock);
             
             // Assert - Building should have progress but not be complete immediately
-            Assert.AreEqual(10, house.ConstructionProgress, 
+            Assert.AreEqual(BuildingCostHelper.CivilBuildingBuildCost, house.ConstructionProgress,
                 "Progress should match delivered resources");
             Assert.IsFalse(house.IsConstructionPhaseComplete(), 
                 "Building should not be complete immediately after delivery (build-time required)");
             
             // Act - Advance time past build-time
-            // Adult productivity = 1.0, so 10 units = 10 seconds build time
-            float buildTime = 10.1f;
+            // Adult productivity = 1.0, so 100 units = 100 seconds build time
+            float buildTime = 100.1f;
             world.SimulationStep(buildTime);
             
             // Assert - Building should now be complete

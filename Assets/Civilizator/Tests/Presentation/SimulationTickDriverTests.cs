@@ -56,11 +56,13 @@ namespace Civilizator.Presentation.Tests
             // Advance the same total time with different delta-time sequences
             var world1 = new World();
             world1.Initialize();
+            world1.InitializeGameSetup();
             world1.SimulationStep(30f);
             world1.SimulationStep(30f);
 
             var world2 = new World();
             world2.Initialize();
+            world2.InitializeGameSetup();
             world2.SimulationStep(10f);
             world2.SimulationStep(20f);
             world2.SimulationStep(30f);

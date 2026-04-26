@@ -272,20 +272,25 @@ namespace Civilizator.Simulation.Tests
 
         #region T-132 Deposit & Improvement Switch Tests
 
+        [TestCase(48, 48, true)]
+        [TestCase(49, 48, true)]
+        [TestCase(48, 49, true)]
         [TestCase(49, 49, true)]
+        [TestCase(50, 48, true)]
+        [TestCase(48, 50, true)]
         [TestCase(50, 50, true)]
-        [TestCase(51, 51, true)]
-        [TestCase(48, 50, false)]
-        [TestCase(50, 48, false)]
-        [TestCase(52, 50, false)]
-        [TestCase(50, 52, false)]
+        [TestCase(47, 48, false)]
+        [TestCase(48, 47, false)]
+        [TestCase(51, 48, false)]
+        [TestCase(48, 51, false)]
         public void IsAtCentralStorage_CorrectlyIdentifiesCentralFootprint(int x, int y, bool expected)
         {
             // Arrange
             var agent = new Agent(new GridPos(x, y), Profession.Woodcutter, LifeStage.Adult);
+            var centralBuilding = new Building(BuildingKind.Central, new GridPos(48, 48)); // 3x3 footprint at (48,48)
             
             // Act
-            bool result = ProductionSystem.IsAtCentralStorage(agent);
+            bool result = ProductionSystem.IsAtCentralStorage(agent, centralBuilding);
             
             // Assert
             Assert.That(result, Is.EqualTo(expected));
@@ -295,11 +300,12 @@ namespace Civilizator.Simulation.Tests
         public void DepositCarriedResources_AtCentral_DepositsCorrectResourceType()
         {
             // Arrange
-            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 7 };
+            var agent = new Agent(new GridPos(49, 49), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 7 };
             var storage = new CentralStorage();
+            var centralBuilding = new Building(BuildingKind.Central, new GridPos(48, 48));
 
             // Act
-            int deposited = ProductionSystem.DepositCarriedResources(agent, storage);
+            int deposited = ProductionSystem.DepositCarriedResources(agent, storage, centralBuilding);
 
             // Assert
             Assert.That(deposited, Is.EqualTo(7));
@@ -314,9 +320,10 @@ namespace Civilizator.Simulation.Tests
             // Arrange
             var agent = new Agent(new GridPos(10, 10), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 7 };
             var storage = new CentralStorage();
+            var centralBuilding = new Building(BuildingKind.Central, new GridPos(48, 48));
 
             // Act
-            int deposited = ProductionSystem.DepositCarriedResources(agent, storage);
+            int deposited = ProductionSystem.DepositCarriedResources(agent, storage, centralBuilding);
 
             // Assert
             Assert.That(deposited, Is.EqualTo(0));
@@ -328,11 +335,12 @@ namespace Civilizator.Simulation.Tests
         public void DepositCarriedResources_EmptyCarry_ReturnsZero()
         {
             // Arrange
-            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 0 };
+            var agent = new Agent(new GridPos(49, 49), Profession.Woodcutter, LifeStage.Adult) { CarriedResources = 0 };
             var storage = new CentralStorage();
+            var centralBuilding = new Building(BuildingKind.Central, new GridPos(48, 48));
 
             // Act
-            int deposited = ProductionSystem.DepositCarriedResources(agent, storage);
+            int deposited = ProductionSystem.DepositCarriedResources(agent, storage, centralBuilding);
 
             // Assert
             Assert.That(deposited, Is.EqualTo(0));
@@ -372,6 +380,7 @@ namespace Civilizator.Simulation.Tests
             // Arrange
             var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
             var node = new NaturalNode(NaturalNodeType.Tree, new GridPos(51, 51), 100);
+            ProducerThresholds.ResetToDefaults();
 
             // 700 / 1000 = 0.7 which is below 0.8 stop threshold
             bool shouldSwitch = ProductionSystem.ShouldSwitchToImprovement(agent, node, 700, 1000);
@@ -472,13 +481,14 @@ namespace Civilizator.Simulation.Tests
         public void WithdrawResourcesForImprovement_AtCentral_WithdrawsCorrectAmount()
         {
             // Arrange
-            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            var agent = new Agent(new GridPos(49, 49), Profession.Woodcutter, LifeStage.Adult);
             var target = new Building(BuildingKind.Plantation, new GridPos(60, 60)) { ConstructionProgress = 20 };
             var storage = new CentralStorage();
+            var centralBuilding = new Building(BuildingKind.Central, new GridPos(48, 48));
             storage.Deposit(ResourceKind.Logs, 100);
 
             // Act
-            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage);
+            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage, centralBuilding);
 
             // Assert
             Assert.That(withdrawn, Is.EqualTo(10)); // Carry capacity 10
@@ -493,10 +503,11 @@ namespace Civilizator.Simulation.Tests
             var agent = new Agent(new GridPos(10, 10), Profession.Woodcutter, LifeStage.Adult);
             var target = new Building(BuildingKind.Plantation, new GridPos(60, 60));
             var storage = new CentralStorage();
+            var centralBuilding = new Building(BuildingKind.Central, new GridPos(48, 48));
             storage.Deposit(ResourceKind.Logs, 100);
 
             // Act
-            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage);
+            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage, centralBuilding);
 
             // Assert
             Assert.That(withdrawn, Is.EqualTo(0));
@@ -508,13 +519,14 @@ namespace Civilizator.Simulation.Tests
         public void WithdrawResourcesForImprovement_WithdrawsOnlyRemainingRequired()
         {
             // Arrange
-            var agent = new Agent(new GridPos(50, 50), Profession.Woodcutter, LifeStage.Adult);
+            var agent = new Agent(new GridPos(49, 49), Profession.Woodcutter, LifeStage.Adult);
             var target = new Building(BuildingKind.Plantation, new GridPos(60, 60)) { ConstructionProgress = 95 }; // Need 5 more
             var storage = new CentralStorage();
+            var centralBuilding = new Building(BuildingKind.Central, new GridPos(48, 48));
             storage.Deposit(ResourceKind.Logs, 100);
 
             // Act
-            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage);
+            int withdrawn = ProductionSystem.WithdrawResourcesForImprovement(agent, target, storage, centralBuilding);
 
             // Assert
             Assert.That(withdrawn, Is.EqualTo(5));

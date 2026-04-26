@@ -153,16 +153,18 @@ namespace Civilizator.Simulation
 
         /// <summary>
         /// Checks if agent is positioned at the central building storage area.
-        /// Central building is anchored at (50,50) with 3x3 footprint.
+        /// Uses the actual central building anchor and footprint size.
         /// </summary>
-        public static bool IsAtCentralStorage(Agent agent)
+        public static bool IsAtCentralStorage(Agent agent, Building centralBuilding)
         {
             if (agent == null)
                 throw new ArgumentNullException(nameof(agent));
-            
-            // Central building is at anchor (50,50) with 3x3 footprint
-            return agent.Position.X >= 49 && agent.Position.X <= 51 &&
-                   agent.Position.Y >= 49 && agent.Position.Y <= 51;
+            if (centralBuilding == null)
+                throw new ArgumentNullException(nameof(centralBuilding));
+
+            int size = centralBuilding.GetFootprintSize();
+            return agent.Position.X >= centralBuilding.Anchor.X && agent.Position.X < centralBuilding.Anchor.X + size &&
+                   agent.Position.Y >= centralBuilding.Anchor.Y && agent.Position.Y < centralBuilding.Anchor.Y + size;
         }
 
         /// <summary>
@@ -170,13 +172,15 @@ namespace Civilizator.Simulation
         /// Clears agent's carried resources after successful deposit.
         /// </summary>
         /// <returns>Number of units actually deposited</returns>
-        public static int DepositCarriedResources(Agent agent, CentralStorage storage)
+        public static int DepositCarriedResources(Agent agent, CentralStorage storage, Building centralBuilding)
         {
             if (agent == null)
                 throw new ArgumentNullException(nameof(agent));
             if (storage == null)
                 throw new ArgumentNullException(nameof(storage));
-            if (!IsAtCentralStorage(agent))
+            if (centralBuilding == null)
+                throw new ArgumentNullException(nameof(centralBuilding));
+            if (!IsAtCentralStorage(agent, centralBuilding))
                 return 0;
             if (agent.CarriedResources <= 0)
                 return 0;
@@ -279,7 +283,7 @@ namespace Civilizator.Simulation
         /// Withdraws up to agent's carry capacity or remaining required resources.
         /// </summary>
         /// <returns>Amount actually withdrawn</returns>
-        public static int WithdrawResourcesForImprovement(Agent agent, Building target, CentralStorage storage)
+        public static int WithdrawResourcesForImprovement(Agent agent, Building target, CentralStorage storage, Building centralBuilding)
         {
             if (agent == null)
                 throw new ArgumentNullException(nameof(agent));
@@ -287,7 +291,9 @@ namespace Civilizator.Simulation
                 throw new ArgumentNullException(nameof(target));
             if (storage == null)
                 throw new ArgumentNullException(nameof(storage));
-            if (!IsAtCentralStorage(agent))
+            if (centralBuilding == null)
+                throw new ArgumentNullException(nameof(centralBuilding));
+            if (!IsAtCentralStorage(agent, centralBuilding))
                 return 0;
 
             ResourceKind requiredResource = target.GetConstructionResourceKind();
