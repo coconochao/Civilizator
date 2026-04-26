@@ -414,6 +414,34 @@ namespace Civilizator.Simulation
         }
 
         /// <summary>
+        /// Get the action state for a specific agent (for testing/debugging).
+        /// </summary>
+        public AgentActionState GetAgentActionState(Agent agent)
+        {
+            return AgentActionStates.TryGetValue(agent, out var state) ? state : null;
+        }
+
+        /// <summary>
+        /// Get debug information about an agent's current state.
+        /// </summary>
+        public string GetAgentDebugInfo(Agent agent)
+        {
+            var state = GetAgentActionState(agent);
+            if (state == null)
+                return $"{agent}: No action state";
+
+            var pathInfo = state.CurrentPath != null && state.CurrentPath.Count > 0
+                ? $"Path: {state.CurrentPath.Count} tiles, index {state.PathIndex}, dest {state.CurrentPath[state.CurrentPath.Count - 1]}"
+                : "No path";
+
+            var targetInfo = state.CurrentTargetBuilding != null
+                ? $"Target: {state.CurrentTargetBuilding.Kind} at {state.CurrentTargetBuilding.Anchor}"
+                : "No target building";
+
+            return $"{agent} | {pathInfo} | {targetInfo} | Carried: {agent.CarriedResources} | MoveAcc: {state.MoveAccumulator:F2} | GatherAcc: {state.GatherAccumulator:F2}";
+        }
+
+        /// <summary>
         /// Updates all agents with their action loops.
         /// </summary>
         private void UpdateAgents(float deltaTime)
