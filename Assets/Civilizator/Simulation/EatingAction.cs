@@ -92,6 +92,7 @@ namespace Civilizator.Simulation
 
             IsComplete = true;
             WasSuccessful = success;
+            Agent.HasEatenThisCycle = true;
 
             if (success)
             {

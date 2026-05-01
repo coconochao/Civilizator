@@ -151,6 +151,10 @@ namespace Civilizator.Simulation
             GridPos centralPos = new GridPos(48, 48);
             AddBuilding(BuildingKind.Central, centralPos);
 
+            // Give the starting population enough food to avoid immediate starvation loops.
+            Storage.Deposit(ResourceKind.Meat, 100);
+            Storage.Deposit(ResourceKind.PlantFood, 100);
+
             // Spawn initial population - mix of professions
             SpawnInitialPopulation();
 
@@ -700,16 +704,34 @@ namespace Civilizator.Simulation
             GridPos centralPos = central.Anchor;
             if (agent.SoldierMode == SoldierMode.Patrolling)
             {
-                // Patrol mode: move to assigned patrol position
-                if (!state.PatrolPosition.HasValue)
+                // Patrol mode: keep moving through the perimeter patrol route.
+                var patrolPositions = SoldierPatrolSystem.GetPatrolPositions(central, Buildings);
+                if (patrolPositions.Count == 0)
                 {
-                    var assignments = SoldierPatrolSystem.AssignPatrolPositions(
-                        Agents.Where(a => a.Profession == Profession.Soldier && a.IsAlive).ToList(),
-                        central, Buildings);
-                    if (assignments.TryGetValue(agent.Id, out var patrolPos))
+                    return;
+                }
+
+                if (!state.PatrolPosition.HasValue || (agent.Position == state.PatrolPosition.Value && (state.CurrentPath == null || state.CurrentPath.Count == 0)))
+                {
+                    if (!state.PatrolPosition.HasValue)
                     {
-                        state.PatrolPosition = patrolPos;
+                        state.PatrolRouteIndex = agent.Id % patrolPositions.Count;
                     }
+                    else
+                    {
+                        state.PatrolRouteIndex = (state.PatrolRouteIndex + 1) % patrolPositions.Count;
+                    }
+
+                    GridPos nextPatrolPosition = patrolPositions[state.PatrolRouteIndex];
+                    if (nextPatrolPosition == agent.Position && patrolPositions.Count > 1)
+                    {
+                        state.PatrolRouteIndex = (state.PatrolRouteIndex + 1) % patrolPositions.Count;
+                        nextPatrolPosition = patrolPositions[state.PatrolRouteIndex];
+                    }
+
+                    state.PatrolPosition = nextPatrolPosition;
+                    state.CurrentPath = null;
+                    state.PathIndex = 0;
                 }
 
                 if (state.PatrolPosition.HasValue)
@@ -807,6 +829,7 @@ namespace Civilizator.Simulation
         public EatingAction EatingAction { get; set; }
         public Building CurrentTargetBuilding { get; set; }
         public GridPos? PatrolPosition { get; set; }
+        public int PatrolRouteIndex { get; set; }
 
         public AgentActionState()
         {

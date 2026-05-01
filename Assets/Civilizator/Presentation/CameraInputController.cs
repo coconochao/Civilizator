@@ -32,6 +32,7 @@ namespace Civilizator.Presentation
         private InputActionMap _cameraMap;
         private InputAction _panAction;
         private InputAction _zoomAction;
+        private bool _ownsFallbackInputActions;
 
         /// <summary>
         /// Returns true when the configured camera actions were found and cached.
@@ -43,7 +44,21 @@ namespace Civilizator.Presentation
         /// </summary>
         public void SetInputActions(InputActionAsset inputActions)
         {
+            if (_cameraMap != null)
+            {
+                _cameraMap.Disable();
+            }
+
+            if (_ownsFallbackInputActions && _inputActions != null && _inputActions != inputActions)
+            {
+                Object.Destroy(_inputActions);
+            }
+
             _inputActions = inputActions;
+            _ownsFallbackInputActions = false;
+            _cameraMap = null;
+            _panAction = null;
+            _zoomAction = null;
         }
 
         private void Awake()
@@ -61,6 +76,14 @@ namespace Civilizator.Presentation
             if (_cameraMap != null)
             {
                 _cameraMap.Disable();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_ownsFallbackInputActions && _inputActions != null)
+            {
+                Object.Destroy(_inputActions);
             }
         }
 
@@ -83,10 +106,8 @@ namespace Civilizator.Presentation
 
             if (_inputActions == null)
             {
-                _cameraMap = null;
-                _panAction = null;
-                _zoomAction = null;
-                return;
+                _inputActions = CreateFallbackInputActions();
+                _ownsFallbackInputActions = true;
             }
 
             if (_cameraMap != null)
@@ -94,10 +115,52 @@ namespace Civilizator.Presentation
                 _cameraMap.Disable();
             }
 
-            _cameraMap = _inputActions.FindActionMap(_cameraMapName, true);
-            _panAction = _cameraMap.FindAction(_panActionName, true);
-            _zoomAction = _cameraMap.FindAction(_zoomActionName, true);
-            _cameraMap.Enable();
+            try
+            {
+                _cameraMap = _inputActions.FindActionMap(_cameraMapName, true);
+                _panAction = _cameraMap.FindAction(_panActionName, true);
+                _zoomAction = _cameraMap.FindAction(_zoomActionName, true);
+                _cameraMap.Enable();
+            }
+            catch (System.Exception)
+            {
+                if (_ownsFallbackInputActions)
+                {
+                    throw;
+                }
+
+                _inputActions = CreateFallbackInputActions();
+                _ownsFallbackInputActions = true;
+                RefreshBindings();
+            }
+        }
+
+        private static InputActionAsset CreateFallbackInputActions()
+        {
+            var asset = ScriptableObject.CreateInstance<InputActionAsset>();
+            var map = new InputActionMap("Camera");
+
+            var pan = map.AddAction("Pan", InputActionType.Value, expectedControlLayout: "Vector2");
+            pan.AddCompositeBinding("2DVector")
+                .With("Up", "<Keyboard>/w")
+                .With("Down", "<Keyboard>/s")
+                .With("Left", "<Keyboard>/a")
+                .With("Right", "<Keyboard>/d");
+            pan.AddCompositeBinding("2DVector")
+                .With("Up", "<Keyboard>/upArrow")
+                .With("Down", "<Keyboard>/downArrow")
+                .With("Left", "<Keyboard>/leftArrow")
+                .With("Right", "<Keyboard>/rightArrow");
+            pan.AddBinding("<Gamepad>/leftStick");
+
+            var zoom = map.AddAction("Zoom", InputActionType.Value, expectedControlLayout: "Axis");
+            zoom.AddCompositeBinding("1DAxis")
+                .With("Positive", "<Keyboard>/pageUp")
+                .With("Negative", "<Keyboard>/pageDown");
+            zoom.AddBinding("<Mouse>/scroll/y");
+
+            asset.AddActionMap(map);
+            return asset;
         }
 
         /// <summary>

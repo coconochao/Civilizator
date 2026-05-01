@@ -20,23 +20,16 @@ namespace Civilizator.Presentation
         /// </summary>
         public SimulationFacade Facade { get; private set; }
 
+        private bool _hasInitialized;
+
         public SimulationTickDriver()
         {
-            World = new World();
-            World.Initialize();
-            World.InitializeGameSetup();
-            Facade = new SimulationFacade(World);
+            EnsureInitialized();
         }
 
         private void Start()
         {
-            // Initialize the world if not already set (allows injection for testing)
-            World ??= new World();
-            World.Initialize();
-            World.InitializeGameSetup();
-
-            // Create the façade for UI read-only access
-            Facade = new SimulationFacade(World);
+            EnsureInitialized();
         }
 
         private void Update()
@@ -57,5 +50,19 @@ namespace Civilizator.Presentation
         /// Get total simulation seconds elapsed.
         /// </summary>
         public float TotalSimulationSeconds => World?.Clock.TotalSimulationSeconds ?? 0f;
+
+        private void EnsureInitialized()
+        {
+            if (_hasInitialized)
+            {
+                return;
+            }
+
+            World ??= new World();
+            World.Initialize();
+            World.InitializeGameSetup();
+            Facade = new SimulationFacade(World);
+            _hasInitialized = true;
+        }
     }
 }

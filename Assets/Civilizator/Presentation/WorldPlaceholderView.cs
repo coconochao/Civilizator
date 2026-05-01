@@ -30,6 +30,11 @@ namespace Civilizator.Presentation
         private int _gridStride = 10;
 
         private bool _hasBuilt;
+        private bool _useLiveWorld;
+        private SimulationTickDriver _tickDriver;
+        private readonly Dictionary<int, GameObject> _agentMarkers = new Dictionary<int, GameObject>();
+        private readonly Dictionary<int, GameObject> _buildingMarkers = new Dictionary<int, GameObject>();
+        private readonly Dictionary<int, GameObject> _enemyMarkers = new Dictionary<int, GameObject>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void EnsureSceneRootExists()
@@ -86,12 +91,29 @@ namespace Civilizator.Presentation
 
         private void Awake()
         {
+            _tickDriver = GetComponent<SimulationTickDriver>();
+            _useLiveWorld = _tickDriver != null;
             BuildIfNeeded();
         }
 
         private void Start()
         {
             BuildIfNeeded();
+        }
+
+        private void LateUpdate()
+        {
+            if (_tickDriver != null && _tickDriver.World != null && !_useLiveWorld)
+            {
+                _useLiveWorld = true;
+                _hasBuilt = false;
+                BuildIfNeeded();
+            }
+
+            if (_useLiveWorld)
+            {
+                SyncLiveWorld();
+            }
         }
 
         /// <summary>
@@ -107,11 +129,31 @@ namespace Civilizator.Presentation
             _hasBuilt = true;
 
             ClearChildren(transform);
+
+            if (_tickDriver?.World != null)
+            {
+                _useLiveWorld = true;
+                BuildLiveWorld(_tickDriver.World);
+            }
+            else
+            {
+                _useLiveWorld = false;
+                CreateFloor();
+                CreateRegionGrid();
+                CreateNaturalNodes();
+                CreateBuildings();
+                CreateAgents();
+            }
+        }
+
+        private void BuildLiveWorld(World world)
+        {
             CreateFloor();
             CreateRegionGrid();
-            CreateNaturalNodes();
-            CreateBuildings();
-            CreateAgents();
+            CreateNaturalNodes(world.NaturalNodes);
+            CreateBuildings(world.Buildings);
+            CreateAgents(world.Agents);
+            CreateEnemies(world.Enemies);
         }
 
         private void CreateFloor()
@@ -188,6 +230,23 @@ namespace Civilizator.Presentation
             }
         }
 
+        private void CreateNaturalNodes(IReadOnlyList<NaturalNode> nodes)
+        {
+            Transform nodeRoot = CreateChildRoot("Natural Nodes");
+
+            foreach (NaturalNode node in nodes)
+            {
+                GameObject marker = CreatePrimitive(
+                    $"{node.Type}_Node_{node.Position.X}_{node.Position.Y}",
+                    PrimitiveType.Sphere,
+                    new Vector3(0.34f, 0.34f, 0.34f),
+                    TileToWorld(node.Position, _tileWorldSize, 0.18f),
+                    GetNodeColor(node.Type));
+
+                marker.transform.SetParent(nodeRoot, false);
+            }
+        }
+
         private void CreateBuildings()
         {
             Transform buildingRoot = CreateChildRoot("Buildings");
@@ -222,6 +281,34 @@ namespace Civilizator.Presentation
             }
         }
 
+        private void CreateBuildings(IReadOnlyList<Building> buildings)
+        {
+            Transform buildingRoot = CreateChildRoot("Buildings");
+
+            foreach (Building building in buildings)
+            {
+                if (building == null)
+                {
+                    continue;
+                }
+
+                int footprintSize = building.GetFootprintSize();
+                Vector3 footprintCenter = FootprintCenter(building.Anchor, footprintSize, _tileWorldSize, 0.0f);
+
+                GameObject body = CreatePrimitive(
+                    $"Building_{building.Id}_{building.Kind}",
+                    PrimitiveType.Cube,
+                    new Vector3(
+                        footprintSize * _tileWorldSize * 0.62f,
+                        GetBuildingHeight(building.Kind),
+                        footprintSize * _tileWorldSize * 0.62f),
+                    footprintCenter + new Vector3(0f, GetBuildingHeight(building.Kind) * 0.5f + 0.08f, 0f),
+                    GetBuildingColor(building.Kind, false));
+                body.transform.SetParent(buildingRoot, false);
+                _buildingMarkers[building.Id] = body;
+            }
+        }
+
         private void CreateAgents()
         {
             Transform agentRoot = CreateChildRoot("Agents");
@@ -236,6 +323,192 @@ namespace Civilizator.Presentation
                     GetProfessionColor(agent.Profession));
                 marker.transform.SetParent(agentRoot, false);
             }
+        }
+
+        private void CreateAgents(IReadOnlyList<Agent> agents)
+        {
+            Transform agentRoot = CreateChildRoot("Agents");
+
+            foreach (Agent agent in agents)
+            {
+                if (agent == null)
+                {
+                    continue;
+                }
+
+                GameObject marker = CreatePrimitive(
+                    $"Agent_{agent.Id}_{agent.Profession}",
+                    PrimitiveType.Capsule,
+                    new Vector3(0.34f, 0.72f, 0.34f),
+                    TileToWorld(agent.Position, _tileWorldSize, 0.36f),
+                    GetProfessionColor(agent.Profession));
+                marker.transform.SetParent(agentRoot, false);
+                _agentMarkers[agent.Id] = marker;
+            }
+        }
+
+        private void CreateEnemies(IReadOnlyList<Enemy> enemies)
+        {
+            if (enemies == null || enemies.Count == 0)
+            {
+                return;
+            }
+
+            Transform enemyRoot = CreateChildRoot("Enemies");
+            foreach (Enemy enemy in enemies)
+            {
+                if (enemy == null)
+                {
+                    continue;
+                }
+
+                GameObject marker = CreatePrimitive(
+                    $"Enemy_{enemy.Id}",
+                    PrimitiveType.Cube,
+                    new Vector3(0.4f, 0.4f, 0.4f),
+                    TileToWorld(enemy.Position, _tileWorldSize, 0.26f),
+                    new Color(0.78f, 0.2f, 0.18f));
+                marker.transform.SetParent(enemyRoot, false);
+                _enemyMarkers[enemy.Id] = marker;
+            }
+        }
+
+        private void SyncLiveWorld()
+        {
+            World world = _tickDriver?.World;
+            if (world == null)
+            {
+                return;
+            }
+
+            SyncAgents(world.Agents);
+            SyncEnemies(world.Enemies);
+        }
+
+        private void SyncAgents(IReadOnlyList<Agent> agents)
+        {
+            if (agents == null)
+            {
+                return;
+            }
+
+            HashSet<int> activeIds = new HashSet<int>();
+            foreach (Agent agent in agents)
+            {
+                if (agent == null)
+                {
+                    continue;
+                }
+
+                activeIds.Add(agent.Id);
+
+                if (!_agentMarkers.TryGetValue(agent.Id, out GameObject marker) || marker == null)
+                {
+                    Transform agentRoot = GetOrCreateChildRoot("Agents");
+                    marker = CreatePrimitive(
+                        $"Agent_{agent.Id}_{agent.Profession}",
+                        PrimitiveType.Capsule,
+                        new Vector3(0.34f, 0.72f, 0.34f),
+                        TileToWorld(agent.Position, _tileWorldSize, 0.36f),
+                        GetProfessionColor(agent.Profession));
+                    marker.transform.SetParent(agentRoot, false);
+                    _agentMarkers[agent.Id] = marker;
+                }
+
+                marker.transform.position = TileToWorld(agent.Position, _tileWorldSize, 0.36f);
+                marker.name = $"Agent_{agent.Id}_{agent.Profession}";
+                var renderer = marker.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    renderer.material.color = GetProfessionColor(agent.Profession);
+                }
+            }
+
+            RemoveMissingMarkers(_agentMarkers, activeIds);
+        }
+
+        private void SyncEnemies(IReadOnlyList<Enemy> enemies)
+        {
+            if (enemies == null)
+            {
+                return;
+            }
+
+            HashSet<int> activeIds = new HashSet<int>();
+            foreach (Enemy enemy in enemies)
+            {
+                if (enemy == null)
+                {
+                    continue;
+                }
+
+                activeIds.Add(enemy.Id);
+
+                if (!_enemyMarkers.TryGetValue(enemy.Id, out GameObject marker) || marker == null)
+                {
+                    Transform enemyRoot = GetOrCreateChildRoot("Enemies");
+                    marker = CreatePrimitive(
+                        $"Enemy_{enemy.Id}",
+                        PrimitiveType.Cube,
+                        new Vector3(0.4f, 0.4f, 0.4f),
+                        TileToWorld(enemy.Position, _tileWorldSize, 0.26f),
+                        new Color(0.78f, 0.2f, 0.18f));
+                    marker.transform.SetParent(enemyRoot, false);
+                    _enemyMarkers[enemy.Id] = marker;
+                }
+
+                marker.transform.position = TileToWorld(enemy.Position, _tileWorldSize, 0.26f);
+            }
+
+            RemoveMissingMarkers(_enemyMarkers, activeIds);
+        }
+
+        private static void RemoveMissingMarkers(Dictionary<int, GameObject> markers, HashSet<int> activeIds)
+        {
+            List<int> missing = null;
+            foreach (KeyValuePair<int, GameObject> pair in markers)
+            {
+                if (activeIds.Contains(pair.Key))
+                {
+                    continue;
+                }
+
+                missing ??= new List<int>();
+                missing.Add(pair.Key);
+            }
+
+            if (missing == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < missing.Count; i++)
+            {
+                int id = missing[i];
+                GameObject marker = markers[id];
+                if (Application.isPlaying)
+                {
+                    Object.Destroy(marker);
+                }
+                else
+                {
+                    Object.DestroyImmediate(marker);
+                }
+                markers.Remove(id);
+            }
+        }
+
+        private Transform GetOrCreateChildRoot(string childName)
+        {
+            Transform existing = transform.Find(childName);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            GameObject child = new GameObject(childName);
+            child.transform.SetParent(transform, false);
+            return child.transform;
         }
 
         private Transform CreateChildRoot(string childName)

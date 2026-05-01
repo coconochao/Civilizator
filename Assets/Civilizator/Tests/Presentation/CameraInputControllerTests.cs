@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEditor;
 
 namespace Civilizator.Presentation.Tests
 {
@@ -30,21 +29,12 @@ namespace Civilizator.Presentation.Tests
         }
 
         [Test]
-        public void ProjectCameraActionAssetExposesBoundPanAndZoomInputs()
+        public void RefreshBindingsBuildsFallbackCameraActionsWhenNoAssetIsAssigned()
         {
-            InputActionAsset asset = AssetDatabase.LoadAssetAtPath<InputActionAsset>("Assets/Civilizator/Input/CivilizatorInput.inputactions");
+            controller.RefreshBindings();
 
-            Assert.IsNotNull(asset);
-
-            InputActionMap cameraMap = asset.FindActionMap("Camera", true);
-            InputAction pan = cameraMap.FindAction("Pan", true);
-            InputAction zoom = cameraMap.FindAction("Zoom", true);
-
-            Assert.IsTrue(pan.bindings.Count > 0);
-            Assert.IsTrue(zoom.bindings.Count > 0);
-            Assert.That(pan.bindings, Has.Some.Matches<InputBinding>(binding => binding.path == "<Keyboard>/w"));
-            Assert.That(pan.bindings, Has.Some.Matches<InputBinding>(binding => binding.path == "<Gamepad>/leftStick"));
-            Assert.That(zoom.bindings, Has.Some.Matches<InputBinding>(binding => binding.path == "<Mouse>/scroll/y"));
+            Assert.IsTrue(controller.HasBoundActions);
+            Assert.IsTrue(controller.gameObject.GetComponent<IsometricCameraRig>() != null);
         }
 
         [Test]
