@@ -75,7 +75,7 @@ namespace Civilizator.Simulation.Tests
         {
             SoldierImprovementControls.SetTowerBuildEmphasis(0.9f);
 
-            var soldier = new Agent(new GridPos(50, 50), Profession.Soldier, LifeStage.Adult);
+            var soldier = new Agent(new GridPos(49, 49), Profession.Soldier, LifeStage.Adult);
             var target = new Building(BuildingKind.Tower, new GridPos(50, 50))
             {
                 IsUnderConstruction = true
