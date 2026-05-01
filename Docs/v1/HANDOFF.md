@@ -13,6 +13,7 @@ The scene boots the current vertical slice automatically:
 - `SimulationTickDriver` initializes the simulation and advances it every frame.
 - `WorldPlaceholderView` creates the grid, natural nodes, buildings, and starter agents.
 - The main camera is set up as the isometric presentation camera for the map.
+- The HUD and control surface are created at runtime if the scene does not already contain them.
 
 ## Player controls
 
@@ -27,6 +28,8 @@ Camera input uses the Input System actions in the `Camera` map:
 
 - `Pan`
 - `Zoom`
+
+The runtime HUD exposes the policy controls as sliders in the left-side panel. If you open the scene in Edit mode, those controls are not part of the authored hierarchy; they appear when the scene enters Play mode.
 
 ## What the player should see
 

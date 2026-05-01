@@ -164,6 +164,34 @@ namespace Civilizator.Simulation
                 AgingSystem.RegisterAgent(agent);
                 AgentActionStates[agent] = new AgentActionState();
             }
+
+            ApplyPlayerSettings();
+        }
+
+        /// <summary>
+        /// Applies the current player-facing settings objects to the live simulation systems.
+        /// UI code can call this after mutating <see cref="ReproductionSettings"/> or <see cref="SoldierControls"/>.
+        /// </summary>
+        public void ApplyPlayerSettings()
+        {
+            ReproductionSystem.ApplySettings(ReproductionSettings);
+            SoldierControls.ApplyToSimulation(SoldierModeSwitchSystem);
+        }
+
+        /// <summary>
+        /// Applies only the current reproduction settings to the live reproduction system.
+        /// </summary>
+        public void ApplyReproductionSettings()
+        {
+            ReproductionSystem.ApplySettings(ReproductionSettings);
+        }
+
+        /// <summary>
+        /// Applies only the current soldier controls to the live soldier mode switch system.
+        /// </summary>
+        public void ApplySoldierControls()
+        {
+            SoldierControls.ApplyToSimulation(SoldierModeSwitchSystem);
         }
 
         /// <summary>
