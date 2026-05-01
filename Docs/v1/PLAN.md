@@ -211,7 +211,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 
 - [x] **T-210** — Single playable scene: central, a few nodes, spawn initial population
 - [x] **T-211** — End-to-end: gather → deposit → construction completes
-- [ ] **T-212** — End-to-end: enemy spawn → combat → possible game over
+- [x] **T-212** — End-to-end: enemy spawn → combat → possible game over
 - [ ] **T-213** — README or `Docs` note: how to run; known SPEC gaps none (or list explicitly)
 
 --- 
@@ -1012,3 +1012,4 @@ Death), multi-agent independent counters, death handling. Verification: agents a
 - 2026-04-21 | T-162 — `Assets/Civilizator/Simulation/Enemy.cs`, `Assets/Civilizator/Simulation/EnemyCombatSystem.cs`, `Assets/Civilizator/Tests/Simulation/EnemyCombatSystemTests.cs` — Enemy combat stats already matched V1 (HP 10, damage 1, 1-second cadence, attacks never miss).
 - 2026-04-22 — T-196 — `Assets/Civilizator/UI/ProductivityDisplay.cs`, `Assets/Civilizator/UI/ProductivityDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/ProductivityDisplayTests.cs`, `Assets/Civilizator/Tests/UI/ProductivityDisplayTests.cs.meta` — Added a productivity/starvation HUD with overall and per-stage averages plus starvation counts, along with edit-mode coverage. Verification pending user-run Unity EditMode tests.
 - 2026-04-24 — T-211 — `Assets/Civilizator/Tests/Simulation/ConstructionVerticalSliceTests.cs` — Added comprehensive vertical slice tests covering the full gather → deposit → construction flow: resource gathering and depositing, builder withdrawal and delivery, threshold-controlled improvement, and build-time gating. Tests verify that logs decrease and buildings complete successfully.
+- 2026-05-01 — T-212 — `Assets/Civilizator/Simulation/CombatSystem.cs`, `Assets/Civilizator/Simulation/TowerCombatSystem.cs`, `Assets/Civilizator/Simulation/EnemyCombatSystem.cs`, `Assets/Civilizator/Simulation/World.cs`, `Assets/Civilizator/Tests/Simulation/CombatVerticalSliceTests.cs`, `Assets/Civilizator/Tests/Simulation/CombatVerticalSliceTests.cs.meta` — Wired the combat vertical slice end-to-end: soldiers, towers, and enemies now resolve timed attacks through the shared combat pipeline, the world re-checks defeat immediately after combat, and a regression test covers enemy spawn, tower damage, central destruction, and game-over state.

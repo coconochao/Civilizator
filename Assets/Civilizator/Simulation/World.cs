@@ -203,6 +203,7 @@ namespace Civilizator.Simulation
             UpdateAgents(deltaTime);
             UpdateEnemies(deltaTime);
             UpdateCombat(deltaTime);
+            CheckGameOverConditions();
 
             // Per-cycle updates
             if (cycleChanged)

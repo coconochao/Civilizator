@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Civilizator.Simulation
 {
@@ -29,6 +30,8 @@ namespace Civilizator.Simulation
         /// Tower attack cadence in seconds.
         /// </summary>
         public const float AttackIntervalSeconds = CombatSystem.AttackIntervalSeconds;
+
+        private static readonly Dictionary<int, float> TowerAttackAccumulators = new Dictionary<int, float>();
 
         /// <summary>
         /// Returns true when the tower can fire.
@@ -182,8 +185,78 @@ namespace Civilizator.Simulation
         /// </summary>
         public static void UpdateTowerCombat(IEnumerable<Building> buildings, IEnumerable<Agent> agents, IEnumerable<Enemy> enemies, SimulationClock clock, float deltaTime)
         {
-            // Placeholder for tower combat logic
-            // Will be implemented in later tasks
+            if (buildings == null)
+                throw new ArgumentNullException(nameof(buildings));
+            if (agents == null)
+                throw new ArgumentNullException(nameof(agents));
+            if (enemies == null)
+                throw new ArgumentNullException(nameof(enemies));
+            if (clock == null)
+                throw new ArgumentNullException(nameof(clock));
+            if (deltaTime <= 0f)
+                return;
+
+            var livingEnemies = enemies.Where(enemy => enemy != null && enemy.IsAlive).ToList();
+            if (livingEnemies.Count == 0)
+                return;
+
+            foreach (var tower in buildings)
+            {
+                if (tower == null || tower.Kind != BuildingKind.Tower || tower.HitPoints <= 0)
+                    continue;
+                if (!CanTowerFire(tower, agents))
+                    continue;
+
+                float accumulator = GetTowerAttackAccumulator(tower.Id);
+                accumulator += deltaTime;
+
+                while (accumulator >= AttackIntervalSeconds)
+                {
+                    var target = FindNearestEnemyInRange(tower, livingEnemies);
+                    if (target == null)
+                        break;
+
+                    ApplyAttack(tower, target);
+                    accumulator -= AttackIntervalSeconds;
+
+                    livingEnemies = enemies.Where(enemy => enemy != null && enemy.IsAlive).ToList();
+                    if (livingEnemies.Count == 0)
+                        break;
+                }
+
+                TowerAttackAccumulators[tower.Id] = accumulator;
+            }
+        }
+
+        private static float GetTowerAttackAccumulator(int towerId)
+        {
+            if (!TowerAttackAccumulators.TryGetValue(towerId, out var accumulator))
+            {
+                accumulator = 0f;
+            }
+
+            return accumulator;
+        }
+
+        private static Enemy FindNearestEnemyInRange(Building tower, IReadOnlyList<Enemy> enemies)
+        {
+            Enemy nearest = null;
+            int bestDistance = int.MaxValue;
+
+            foreach (var enemy in enemies)
+            {
+                if (!IsEnemyInRange(tower, enemy.Position))
+                    continue;
+
+                int distance = GridPos.Manhattan(tower.Anchor, enemy.Position);
+                if (distance < bestDistance || (distance == bestDistance && (nearest == null || enemy.Id < nearest.Id)))
+                {
+                    nearest = enemy;
+                    bestDistance = distance;
+                }
+            }
+
+            return nearest;
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Civilizator.Simulation
 {
@@ -28,6 +29,8 @@ namespace Civilizator.Simulation
         /// Enemy attacks are deterministic and cannot miss in V1.
         /// </summary>
         public const bool AttacksAlwaysHit = true;
+
+        private static readonly Dictionary<int, float> EnemyAttackAccumulators = new Dictionary<int, float>();
 
         /// <summary>
         /// Returns the enemy's maximum hit points.
@@ -102,8 +105,90 @@ namespace Civilizator.Simulation
         /// </summary>
         public static void UpdateEnemyCombat(IEnumerable<Enemy> enemies, IEnumerable<Agent> agents, Building central, SimulationClock clock, float deltaTime)
         {
-            // Placeholder for enemy combat logic
-            // Will be implemented in later tasks
+            if (enemies == null)
+                throw new ArgumentNullException(nameof(enemies));
+            if (agents == null)
+                throw new ArgumentNullException(nameof(agents));
+            if (clock == null)
+                throw new ArgumentNullException(nameof(clock));
+            if (deltaTime <= 0f)
+                return;
+
+            var livingAgents = agents.Where(agent => agent != null && agent.IsAlive).ToList();
+            var buildings = new List<Building>();
+            if (central != null)
+                buildings.Add(central);
+
+            foreach (var enemy in enemies)
+            {
+                if (enemy == null || !enemy.IsAlive)
+                    continue;
+
+                float accumulator = GetEnemyAttackAccumulator(enemy.Id);
+                accumulator += deltaTime;
+
+                while (accumulator >= AttackIntervalSeconds)
+                {
+                    var target = EnemyAISystem.FindBestTarget(
+                        enemy,
+                        Enumerable.Empty<Agent>(),
+                        Enumerable.Empty<Building>(),
+                        livingAgents.Where(agent => agent.Profession != Profession.Soldier),
+                        buildings);
+
+                    if (target == null || !IsTargetInMeleeRange(enemy, target))
+                        break;
+
+                    if (target.Agent != null)
+                    {
+                        ApplyAttack(target.Agent);
+                    }
+                    else if (target.Building != null)
+                    {
+                        ApplyAttack(target.Building);
+                    }
+
+                    accumulator -= AttackIntervalSeconds;
+
+                    livingAgents = agents.Where(agent => agent != null && agent.IsAlive).ToList();
+                    if (livingAgents.Count == 0)
+                        break;
+                }
+
+                EnemyAttackAccumulators[enemy.Id] = accumulator;
+            }
+        }
+
+        private static float GetEnemyAttackAccumulator(int enemyId)
+        {
+            if (!EnemyAttackAccumulators.TryGetValue(enemyId, out var accumulator))
+            {
+                accumulator = 0f;
+            }
+
+            return accumulator;
+        }
+
+        private static bool IsTargetInMeleeRange(Enemy enemy, EnemyAISystem.EnemyTarget target)
+        {
+            if (target == null)
+                return false;
+
+            if (target.Agent != null)
+                return GridPos.Manhattan(enemy.Position, target.Agent.Position) <= 1;
+
+            if (target.Building != null)
+            {
+                var occupiedTiles = new List<GridPos>();
+                target.Building.GetOccupiedTiles(occupiedTiles);
+                foreach (var tile in occupiedTiles)
+                {
+                    if (GridPos.Manhattan(enemy.Position, tile) <= 1)
+                        return true;
+                }
+            }
+
+            return false;
         }
     }
 }
