@@ -190,10 +190,17 @@ namespace Civilizator.Simulation
             if (SimulationClock != null && BuildTimeEndSeconds > 0f)
             {
                 float currentSimTime = SimulationClock.TotalSimulationSeconds;
-                return currentSimTime >= BuildTimeEndSeconds;
+                if (currentSimTime >= BuildTimeEndSeconds)
+                {
+                    IsUnderConstruction = false;
+                    return true;
+                }
+
+                return false;
             }
 
             // No build-time gate active or no clock set; completion based on progress alone
+            IsUnderConstruction = false;
             return true;
         }
 

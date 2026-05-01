@@ -451,11 +451,17 @@ namespace Civilizator.Simulation
             if (central == null)
                 return;
 
-            foreach (var agent in Agents)
-            {
-                if (!agent.IsAlive)
-                    continue;
+            UpdateAgentsByPriority(Agents.Where(a => a.IsAlive && a.Profession == Profession.Builder), deltaTime, central);
+            UpdateAgentsByPriority(Agents.Where(a => a.IsAlive && a.Profession != Profession.Builder), deltaTime, central);
+        }
 
+        /// <summary>
+        /// Updates a set of agents while preserving their individual state.
+        /// </summary>
+        private void UpdateAgentsByPriority(IEnumerable<Agent> agents, float deltaTime, Building central)
+        {
+            foreach (var agent in agents)
+            {
                 if (!AgentActionStates.TryGetValue(agent, out var actionState))
                 {
                     actionState = new AgentActionState();
@@ -547,29 +553,37 @@ namespace Civilizator.Simulation
                 return;
             }
 
-            // If at node, gather
-            if (ProductionSystem.IsOnSameTileAsNode(agent, targetNode))
+            bool atTargetNode = ProductionSystem.IsOnSameTileAsNode(agent, targetNode);
+
+            // If at node and still have room, gather
+            if (atTargetNode && agent.CarriedResources < agent.GetCarryCapacity() && targetNode.Remaining > 0)
             {
                 float gatherAccumulator = state.GatherAccumulator;
                 ProductionSystem.ProcessGathering(agent, targetNode, deltaTime, ref gatherAccumulator);
                 state.GatherAccumulator = gatherAccumulator;
-
-                // If carry is full or node depleted, go to central
-                if (agent.CarriedResources >= agent.GetCarryCapacity() || targetNode.Remaining <= 0)
-                {
-                    state.CurrentPath = Pathfinding.FindPathToOccupiedTarget(agent.Position, centralPos, Occupancy);
-                    state.PathIndex = 0;
-                }
             }
             else
             {
-                // Move to node
-                if (state.CurrentPath == null || state.CurrentPath.Count == 0)
+                // If carry is full or node depleted, go to central
+                if (atTargetNode && (agent.CarriedResources >= agent.GetCarryCapacity() || targetNode.Remaining <= 0))
                 {
-                    state.CurrentPath = Pathfinding.FindPath(agent.Position, targetNode.Position, Occupancy);
-                    state.PathIndex = 0;
+                    if (state.CurrentPath == null || state.CurrentPath.Count == 0)
+                    {
+                        state.CurrentPath = Pathfinding.FindPathToOccupiedTarget(agent.Position, centralPos, Occupancy);
+                        state.PathIndex = 0;
+                    }
+                    AdvanceAlongPath(agent, state, deltaTime);
                 }
-                AdvanceAlongPath(agent, state, deltaTime);
+                else
+                {
+                    // Move to node
+                    if (state.CurrentPath == null || state.CurrentPath.Count == 0)
+                    {
+                        state.CurrentPath = Pathfinding.FindPathToOccupiedTarget(agent.Position, targetNode.Position, Occupancy);
+                        state.PathIndex = 0;
+                    }
+                    AdvanceAlongPath(agent, state, deltaTime);
+                }
             }
 
             // If at central with resources, deposit

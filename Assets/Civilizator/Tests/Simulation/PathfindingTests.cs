@@ -370,5 +370,53 @@ namespace Civilizator.Simulation.Tests
             Assert.AreEqual(start, path[0]);
             Assert.AreEqual(target, path[path.Count - 1]);
         }
+
+        [Test]
+        public void FindPathToOccupiedTarget_FromCentralToTree_ReturnsPath()
+        {
+            var start = new GridPos(5, 5);
+            var target = new GridPos(8, 8);
+
+            var central = new Building(BuildingKind.Central, new GridPos(4, 4));
+            var occupiedTiles = new List<GridPos>();
+            central.GetOccupiedTiles(occupiedTiles);
+            foreach (var tile in occupiedTiles)
+            {
+                occupancy.BlockTile(tile);
+            }
+
+            var path = Pathfinding.FindPathToOccupiedTarget(start, target, occupancy);
+
+            Assert.Greater(path.Count, 0, "Path should exist from central to a nearby tree");
+            Assert.AreEqual(start, path[0]);
+            Assert.AreEqual(target, path[path.Count - 1]);
+        }
+
+        [Test]
+        public void FindPathToOccupiedTarget_LeavesCentralFootprint_ReturnsPath()
+        {
+            var start = new GridPos(5, 5);
+            var target = new GridPos(8, 8);
+
+            var central = new Building(BuildingKind.Central, new GridPos(4, 4));
+            var occupiedTiles = new List<GridPos>();
+            central.GetOccupiedTiles(occupiedTiles);
+            foreach (var tile in occupiedTiles)
+            {
+                occupancy.BlockTile(tile);
+            }
+
+            var path = Pathfinding.FindPathToOccupiedTarget(start, target, occupancy);
+
+            Assert.Greater(path.Count, 0, "Path should leave central even when starting inside it");
+            Assert.AreEqual(start, path[0]);
+            Assert.AreEqual(target, path[path.Count - 1]);
+            bool leavesCentralFootprint =
+                path.Contains(new GridPos(3, 5)) ||
+                path.Contains(new GridPos(7, 5)) ||
+                path.Contains(new GridPos(5, 3)) ||
+                path.Contains(new GridPos(5, 7));
+            Assert.IsTrue(leavesCentralFootprint, "Path should exit the central footprint before heading to the target");
+        }
     }
 }

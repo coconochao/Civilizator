@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Civilizator.Simulation
 {
@@ -85,6 +86,13 @@ namespace Civilizator.Simulation
             if (directPath.Count > 0)
                 return directPath;
 
+            if (!occupancy.IsPassable(start))
+            {
+                var blockedStartPath = FindPathFromBlockedStart(start, target, occupancy);
+                if (blockedStartPath.Count > 0)
+                    return blockedStartPath;
+            }
+
             var bestPath = new List<GridPos>();
             int bestLength = int.MaxValue;
 
@@ -109,6 +117,85 @@ namespace Civilizator.Simulation
 
             bestPath.Add(target);
             return bestPath;
+        }
+
+        /// <summary>
+        /// Finds a path when the start tile is inside a blocked footprint.
+        /// The path first walks through blocked tiles in the connected component
+        /// until it reaches a passable exit tile, then continues normally.
+        /// </summary>
+        private static List<GridPos> FindPathFromBlockedStart(GridPos start, GridPos target, GridOccupancy occupancy)
+        {
+            var result = new List<GridPos>();
+
+            if (occupancy.IsPassable(start))
+                return result;
+
+            var queue = new Queue<GridPos>();
+            var visited = new HashSet<GridPos>();
+            var parent = new Dictionary<GridPos, GridPos>();
+
+            queue.Enqueue(start);
+            visited.Add(start);
+
+            int bestLength = int.MaxValue;
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+
+                foreach (var neighbor in GetFourWayNeighbors(current))
+                {
+                    if (occupancy.IsPassable(neighbor))
+                    {
+                        var pathToExit = ReconstructPath(parent, start, current);
+                        pathToExit.Add(neighbor);
+
+                        var remainder = FindPathToOccupiedTarget(neighbor, target, occupancy);
+                        if (remainder.Count == 0)
+                            continue;
+
+                        var fullPath = new List<GridPos>(pathToExit);
+                        fullPath.AddRange(remainder.Skip(1));
+
+                        if (fullPath.Count < bestLength)
+                        {
+                            result = fullPath;
+                            bestLength = fullPath.Count;
+                        }
+                    }
+                    else if (!visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        parent[neighbor] = current;
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Reconstructs a path from the start tile to the given current tile
+        /// using the parent map built while traversing blocked tiles.
+        /// </summary>
+        private static List<GridPos> ReconstructPath(
+            Dictionary<GridPos, GridPos> parent,
+            GridPos start,
+            GridPos current)
+        {
+            var path = new List<GridPos>();
+            var node = current;
+            path.Insert(0, node);
+
+            while (node != start)
+            {
+                node = parent[node];
+                path.Insert(0, node);
+            }
+
+            return path;
         }
 
         /// <summary>

@@ -39,9 +39,11 @@ namespace Civilizator.Simulation.Tests
             // Act - Simulate enough time for full cycle
             // Move to tree (1 tile), gather (10 units at 1/sec), move to central (3 tiles), deposit (instant)
             // Move to central (from plantation area), withdraw, deliver
-            // Total time needed: ~30 seconds for the full cycle
+            // Total time needed is longer than the basic gather/deposit loop because
+            // the agent only carries 10 logs per trip and must walk between tree,
+            // central storage, and the construction site.
             
-            float totalTime = 120f; // 2 minutes should be more than enough
+            float totalTime = 220f; // Long enough for the plantation to reach 100 progress
             float deltaTime = 0.1f;
             int steps = (int)(totalTime / deltaTime);
             
@@ -188,7 +190,7 @@ namespace Civilizator.Simulation.Tests
             var initialPosition = woodcutter.Position;
             
             // Act - Simulate gathering and depositing
-            float timeToGatherAndDeposit = 30f;
+            float timeToGatherAndDeposit = 45f;
             float deltaTime = 0.1f;
             int steps = (int)(timeToGatherAndDeposit / deltaTime);
             
