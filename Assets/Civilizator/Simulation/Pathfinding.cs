@@ -75,6 +75,100 @@ namespace Civilizator.Simulation
         }
 
         /// <summary>
+        /// Finds a path to a destination tile even when the destination itself is blocked.
+        /// This is used for entering building anchors, which are occupied in the occupancy grid.
+        /// If the destination is passable, this behaves like <see cref="FindPath(GridPos, GridPos, GridOccupancy)"/>.
+        /// </summary>
+        public static List<GridPos> FindPathToOccupiedTarget(GridPos start, GridPos target, GridOccupancy occupancy)
+        {
+            var directPath = FindPathIgnoringBlockedStart(start, target, occupancy);
+            if (directPath.Count > 0)
+                return directPath;
+
+            var bestPath = new List<GridPos>();
+            int bestLength = int.MaxValue;
+
+            foreach (var neighbor in GetFourWayNeighbors(target))
+            {
+                if (!occupancy.IsPassable(neighbor))
+                    continue;
+
+                var candidatePath = FindPathIgnoringBlockedStart(start, neighbor, occupancy);
+                if (candidatePath.Count == 0)
+                    continue;
+
+                if (candidatePath.Count < bestLength)
+                {
+                    bestPath = candidatePath;
+                    bestLength = candidatePath.Count;
+                }
+            }
+
+            if (bestPath.Count == 0)
+                return bestPath;
+
+            bestPath.Add(target);
+            return bestPath;
+        }
+
+        /// <summary>
+        /// Finds a path while allowing the start tile to be occupied.
+        /// This is useful when the agent currently stands inside a building footprint.
+        /// </summary>
+        private static List<GridPos> FindPathIgnoringBlockedStart(GridPos start, GridPos target, GridOccupancy occupancy)
+        {
+            var path = new List<GridPos>();
+
+            if (start == target)
+            {
+                path.Add(start);
+                return path;
+            }
+
+            if (!occupancy.IsPassable(target))
+            {
+                return path;
+            }
+
+            var queue = new Queue<GridPos>();
+            var visited = new HashSet<GridPos>();
+            var parent = new Dictionary<GridPos, GridPos>();
+
+            queue.Enqueue(start);
+            visited.Add(start);
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+
+                if (current == target)
+                {
+                    var node = target;
+                    while (node != start)
+                    {
+                        path.Insert(0, node);
+                        node = parent[node];
+                    }
+                    path.Insert(0, start);
+                    return path;
+                }
+
+                var neighbors = GetFourWayNeighbors(current);
+                foreach (var neighbor in neighbors)
+                {
+                    if (!visited.Contains(neighbor) && occupancy.IsPassable(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        parent[neighbor] = current;
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            return path;
+        }
+
+        /// <summary>
         /// Finds the nearest reachable tile to a target position using Manhattan distance.
         /// If multiple tiles are equidistant, deterministically picks the one with lowest X first, then lowest Y.
         /// </summary>

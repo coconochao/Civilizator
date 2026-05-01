@@ -191,11 +191,12 @@ namespace Civilizator.Simulation
             if (GameOver.IsGameOver)
                 return;
 
+            int previousCycle = Clock.CurrentCycle;
+
             // Advance the clock
             Clock.Advance(deltaTime);
 
             // Track cycle changes for per-cycle updates
-            int previousCycle = Clock.CurrentCycle - 1;
             bool cycleChanged = Clock.CurrentCycle > previousCycle;
 
             // Update all simulation systems
@@ -527,7 +528,7 @@ namespace Civilizator.Simulation
             else
             {
                 // Improvement loop
-                UpdateImprovementLoop(agent, state, deltaTime, central, 
+                UpdateImprovementLoop(agent, state, deltaTime, central, null,
                     ProductionSystem.GetRequiredBuildingForProfession(agent.Profession));
             }
         }
@@ -541,7 +542,7 @@ namespace Civilizator.Simulation
             if (targetNode == null)
             {
                 // No nodes available, switch to improvement
-                UpdateImprovementLoop(agent, state, deltaTime, central, 
+                UpdateImprovementLoop(agent, state, deltaTime, central, null,
                     ProductionSystem.GetRequiredBuildingForProfession(agent.Profession));
                 return;
             }
@@ -556,7 +557,7 @@ namespace Civilizator.Simulation
                 // If carry is full or node depleted, go to central
                 if (agent.CarriedResources >= agent.GetCarryCapacity() || targetNode.Remaining <= 0)
                 {
-                    state.CurrentPath = Pathfinding.FindPath(agent.Position, centralPos, Occupancy);
+                    state.CurrentPath = Pathfinding.FindPathToOccupiedTarget(agent.Position, centralPos, Occupancy);
                     state.PathIndex = 0;
                 }
             }
@@ -581,9 +582,22 @@ namespace Civilizator.Simulation
         /// <summary>
         /// Updates the improvement loop for an agent.
         /// </summary>
-        private void UpdateImprovementLoop(Agent agent, AgentActionState state, float deltaTime, Building central, BuildingKind targetKind)
+        private void UpdateImprovementLoop(
+            Agent agent,
+            AgentActionState state,
+            float deltaTime,
+            Building central,
+            Building targetBuilding,
+            BuildingKind targetKind)
         {
             GridPos centralPos = central.Anchor;
+            if (targetBuilding != null && state.CurrentTargetBuilding != targetBuilding)
+            {
+                state.CurrentTargetBuilding = targetBuilding;
+                state.CurrentPath = null;
+                state.PathIndex = 0;
+            }
+
             // If carrying resources, deliver to building
             if (agent.CarriedResources > 0)
             {
@@ -596,10 +610,10 @@ namespace Civilizator.Simulation
                     // Move to target building
                     if (state.CurrentTargetBuilding == null || state.CurrentPath == null || state.CurrentPath.Count == 0)
                     {
-                        state.CurrentTargetBuilding = ProductionSystem.FindNearestImprovementTarget(agent, Buildings, targetKind);
+                        state.CurrentTargetBuilding = targetBuilding ?? ProductionSystem.FindNearestImprovementTarget(agent, Buildings, targetKind);
                         if (state.CurrentTargetBuilding != null)
                         {
-                            state.CurrentPath = Pathfinding.FindPath(agent.Position, state.CurrentTargetBuilding.Anchor, Occupancy);
+                            state.CurrentPath = Pathfinding.FindPathToOccupiedTarget(agent.Position, state.CurrentTargetBuilding.Anchor, Occupancy);
                             state.PathIndex = 0;
                         }
                     }
@@ -611,7 +625,7 @@ namespace Civilizator.Simulation
                 // Withdraw resources from central
                 if (state.CurrentTargetBuilding == null)
                 {
-                    state.CurrentTargetBuilding = ProductionSystem.FindNearestImprovementTarget(agent, Buildings, targetKind);
+                    state.CurrentTargetBuilding = targetBuilding ?? ProductionSystem.FindNearestImprovementTarget(agent, Buildings, targetKind);
                 }
 
                 if (state.CurrentTargetBuilding != null)
@@ -625,7 +639,7 @@ namespace Civilizator.Simulation
                         // Move to central
                         if (state.CurrentPath == null || state.CurrentPath.Count == 0)
                         {
-                            state.CurrentPath = Pathfinding.FindPath(agent.Position, centralPos, Occupancy);
+                            state.CurrentPath = Pathfinding.FindPathToOccupiedTarget(agent.Position, centralPos, Occupancy);
                             state.PathIndex = 0;
                         }
                         AdvanceAlongPath(agent, state, deltaTime);
@@ -660,7 +674,7 @@ namespace Civilizator.Simulation
 
             // Builders only do improvement work
             var target = BuilderSystem.FindBestImprovementTarget(agent, Agents, Buildings, Storage, ProfessionTargets);
-            UpdateImprovementLoop(agent, state, deltaTime, central, target?.Kind ?? BuildingKind.House);
+            UpdateImprovementLoop(agent, state, deltaTime, central, target, target?.Kind ?? BuildingKind.House);
         }
 
         /// <summary>
@@ -699,7 +713,7 @@ namespace Civilizator.Simulation
             else
             {
                 // Improve mode: build towers
-                UpdateImprovementLoop(agent, state, deltaTime, central, BuildingKind.Tower);
+                UpdateImprovementLoop(agent, state, deltaTime, central, null, BuildingKind.Tower);
             }
         }
 

@@ -342,5 +342,33 @@ namespace Civilizator.Simulation.Tests
                 Assert.IsFalse(blockedSet.Contains(tile), $"Path should not contain blocked tile {tile}");
             }
         }
+
+        [Test]
+        public void FindPathToOccupiedTarget_TargetBlocked_ReturnsPathEndingAtTarget()
+        {
+            var start = new GridPos(0, 0);
+            var target = new GridPos(3, 3);
+            occupancy.BlockTile(target);
+
+            var path = Pathfinding.FindPathToOccupiedTarget(start, target, occupancy);
+
+            Assert.Greater(path.Count, 0, "Path should exist to a blocked destination");
+            Assert.AreEqual(start, path[0]);
+            Assert.AreEqual(target, path[path.Count - 1]);
+        }
+
+        [Test]
+        public void FindPathToOccupiedTarget_StartBlocked_ReturnsPath()
+        {
+            var start = new GridPos(2, 2);
+            var target = new GridPos(5, 5);
+            occupancy.BlockTile(start);
+
+            var path = Pathfinding.FindPathToOccupiedTarget(start, target, occupancy);
+
+            Assert.Greater(path.Count, 0, "Path should exist even when starting inside a blocked tile");
+            Assert.AreEqual(start, path[0]);
+            Assert.AreEqual(target, path[path.Count - 1]);
+        }
     }
 }

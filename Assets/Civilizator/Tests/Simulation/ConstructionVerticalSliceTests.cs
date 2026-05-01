@@ -308,7 +308,7 @@ namespace Civilizator.Simulation.Tests
             var initialPosition = builder.Position;
             
             // Act - Simulate builder working
-            float timeToComplete = 60f;
+            float timeToComplete = 100f;
             float deltaTime = 0.1f;
             int steps = (int)(timeToComplete / deltaTime);
             

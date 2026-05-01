@@ -73,7 +73,7 @@ namespace Civilizator.Simulation
             }
             else
             {
-                PathToCenter = Pathfinding.FindPath(Agent.Position, CentralBuildingLocation, occupancy);
+                PathToCenter = Pathfinding.FindPathToOccupiedTarget(Agent.Position, CentralBuildingLocation, occupancy);
                 if (PathToCenter.Count == 0)
                 {
                     // No path found; action fails
