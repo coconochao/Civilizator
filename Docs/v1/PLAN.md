@@ -212,7 +212,7 @@ Check tasks off in order. IDs are stable—body sections use the same ID.
 - [x] **T-210** — Single playable scene: central, a few nodes, spawn initial population
 - [x] **T-211** — End-to-end: gather → deposit → construction completes
 - [x] **T-212** — End-to-end: enemy spawn → combat → possible game over
-- [ ] **T-213** — README or `Docs` note: how to run; known SPEC gaps none (or list explicitly)
+- [x] **T-213** — README or `Docs` note: how to run; known SPEC gaps none (or list explicitly)
 
 --- 
 
@@ -924,6 +924,7 @@ _Append one line per completed task (optional but recommended)._
 - 2026-04-22 — T-194 — `Assets/Civilizator/UI/HousingDisplay.cs`, `Assets/Civilizator/UI/HousingDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/HousingDisplayTests.cs`, `Assets/Civilizator/Tests/UI/HousingDisplayTests.cs.meta` — Added a housing coverage HUD with assigned/unassigned counts, an agent-list binding helper, and edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
 - 2026-04-22 — T-195 — `Assets/Civilizator/UI/ActivityBreakdownDisplay.cs`, `Assets/Civilizator/UI/ActivityBreakdownDisplay.cs.meta`, `Assets/Civilizator/Tests/UI/ActivityBreakdownDisplayTests.cs`, `Assets/Civilizator/Tests/UI/ActivityBreakdownDisplayTests.cs.meta` — Added a per-profession activity HUD with live world-state derivation for producers, builders, soldiers, and staffed towers, plus edit-mode coverage. Verified with headless Unity compile on `/tmp/Civilizator-unity-check` after syncing a clean copy because the main project was open in the editor.
 - 2026-04-22 — T-202 — `Assets/Civilizator/Presentation/WorldPlaceholderView.cs`, `Assets/Civilizator/Presentation/WorldPlaceholderView.cs.meta`, `Assets/Civilizator/Tests/Presentation/WorldPlaceholderViewTests.cs`, `Assets/Civilizator/Tests/Presentation/WorldPlaceholderViewTests.cs.meta` — Added a runtime bootstrap that spawns grid-aligned placeholder floor, region grid, natural nodes, buildings, and agents using primitive meshes plus tile-to-world helpers and coverage for the coordinate math. Verified with headless Unity batchmode compile on `/tmp/civilizator-verify` (the main project was open, so I used a clean copy).
+- 2026-05-01 — T-213 — `Docs/v1/HANDOFF.md`, `Docs/v1/PLAN.md` — Added a concise runbook for `SampleScene`, policy controls, camera actions, player-facing HUDs, and explicit SPEC-gap status. Verification: documentation-only change.
 
 Format: `YYYY-MM-DD | T-xxx | note`
 
