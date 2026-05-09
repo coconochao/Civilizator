@@ -23,6 +23,7 @@ namespace Civilizator.UI
         private const float PanelBottomMargin = 16f;
         private const float PanelSideMargin = 16f;
         private const float RowSpacing = 8f;
+        private const float EstimatedScrollContentHeight = 2000f;
 
         private static readonly Profession[] ProducerProfessions =
         {
@@ -47,6 +48,7 @@ namespace Civilizator.UI
         private static readonly Color AccentColor = new Color(0.22f, 0.48f, 0.76f, 1f);
         private static readonly Color TextColor = new Color(0.96f, 0.97f, 0.99f, 1f);
         private static readonly Color DimTextColor = new Color(0.73f, 0.79f, 0.86f, 1f);
+        private static Font _hudFont;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void EnsureSceneHudExists()
@@ -75,6 +77,7 @@ namespace Civilizator.UI
         private Text _housingText;
         private Text _activityText;
         private Text _productivityText;
+        private Vector2 _onGuiScrollPosition;
 
         private readonly List<ProfessionTargetRow> _professionTargetRows = new List<ProfessionTargetRow>();
         private readonly List<ProducerThresholdRow> _producerThresholdRows = new List<ProducerThresholdRow>();
@@ -96,6 +99,16 @@ namespace Civilizator.UI
         {
             EnsureDriverBinding();
             RefreshDiagnostics();
+        }
+
+        private void OnGUI()
+        {
+            if (!Application.isPlaying || _world == null || _facade == null)
+            {
+                return;
+            }
+
+            DrawImmediateModeHud();
         }
 
         private void BuildIfNeeded()
@@ -143,34 +156,11 @@ namespace Civilizator.UI
             }
 
             var panel = CreatePanel(_uiRoot, "HUD Panel", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(PanelSideMargin, PanelBottomMargin), new Vector2(PanelWidth + PanelSideMargin, -PanelTopMargin), PanelColor);
-            var panelLayout = panel.gameObject.AddComponent<VerticalLayoutGroup>();
-            panelLayout.padding = new RectOffset(16, 16, 16, 16);
-            panelLayout.spacing = 10f;
-            panelLayout.childAlignment = TextAnchor.UpperLeft;
-            panelLayout.childControlWidth = true;
-            panelLayout.childControlHeight = true;
-            panelLayout.childForceExpandWidth = true;
-            panelLayout.childForceExpandHeight = false;
-            CreateTitle(panel, "Civilizator V1");
-            _statusText = CreateBodyText(panel, "Waiting for simulation...");
+            ScrollRectHandle scrollView = CreateScrollView(panel, "HUD Scroll View");
+            var content = scrollView.Content;
 
-            var content = CreatePanel(panel, "HUD Content", new Vector2(0f, 0f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero, Color.clear);
-            var contentLayout = content.gameObject.AddComponent<VerticalLayoutGroup>();
-            contentLayout.padding = new RectOffset(0, 0, 0, 0);
-            contentLayout.spacing = 8f;
-            contentLayout.childAlignment = TextAnchor.UpperLeft;
-            contentLayout.childControlWidth = true;
-            contentLayout.childControlHeight = true;
-            contentLayout.childForceExpandWidth = true;
-            contentLayout.childForceExpandHeight = false;
-
-            var contentFitter = content.gameObject.AddComponent<ContentSizeFitter>();
-            contentFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            var contentLayoutElement = content.gameObject.AddComponent<LayoutElement>();
-            contentLayoutElement.flexibleHeight = 1f;
-            contentLayoutElement.minHeight = 0f;
+            CreateTitle(content, "Civilizator V1");
+            _statusText = CreateBodyText(content, "Waiting for simulation...");
 
             CreateSectionHeader(content, "Player Controls");
             CreateProfessionTargetsSection(content);
@@ -186,6 +176,8 @@ namespace Civilizator.UI
             _housingText = CreateMetricBlock(content, "Housing");
             _activityText = CreateMetricBlock(content, "Activity");
             _productivityText = CreateMetricBlock(content, "Productivity");
+
+            FinalizeHudLayout(scrollView);
         }
 
         private void EnsureCanvasAndEventSystem()
@@ -341,6 +333,199 @@ namespace Civilizator.UI
                 var snapshot = ProductivityDisplay.ProductivitySnapshot.FromAgents(_world.Agents);
                 _productivityText.text = ProductivityDisplay.ProductivityDisplayFormatter.Format(snapshot);
             }
+        }
+
+        private void DrawImmediateModeHud()
+        {
+            const float panelWidth = 540f;
+            const float margin = 16f;
+            const float padding = 16f;
+            const float lineHeight = 18f;
+            const float sectionGap = 10f;
+            const float controlGap = 8f;
+            const float blockGap = 10f;
+            const float contentWidth = panelWidth - (padding * 2f) - 16f;
+
+            var titleStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 20,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.white }
+            };
+
+            var headerStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 15,
+                fontStyle = FontStyle.Bold,
+                wordWrap = true,
+                normal = { textColor = new Color(0.22f, 0.48f, 0.76f, 1f) }
+            };
+
+            var labelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 13,
+                wordWrap = true,
+                normal = { textColor = Color.white }
+            };
+
+            var dimLabelStyle = new GUIStyle(labelStyle)
+            {
+                normal = { textColor = new Color(0.73f, 0.79f, 0.86f, 1f) }
+            };
+
+            Rect panelRect = new Rect(margin, margin, panelWidth, Screen.height - (margin * 2f));
+            GUI.Box(panelRect, GUIContent.none);
+
+            Rect viewRect = new Rect(0f, 0f, contentWidth, 2200f);
+            _onGuiScrollPosition = GUI.BeginScrollView(panelRect, _onGuiScrollPosition, viewRect);
+            GUILayout.BeginArea(new Rect(padding, padding, contentWidth, viewRect.height - padding));
+
+            GUILayout.Label("Civilizator V1", titleStyle);
+            GUILayout.Space(controlGap);
+
+            string gameOverText = _facade.IsGameOver ? $"Game over: {_facade.GameOverReason}" : "Running";
+            GUILayout.Label($"Cycle: {_facade.CurrentCycle}", labelStyle);
+            GUILayout.Label($"Elapsed: {_facade.TotalSimulationSeconds:0.##} s", labelStyle);
+            GUILayout.Label(gameOverText, labelStyle);
+
+            GUILayout.Space(sectionGap);
+            GUILayout.Label("Player Controls", headerStyle);
+            GUILayout.Space(controlGap);
+
+            DrawProfessionTargetsGui(labelStyle, dimLabelStyle, controlGap);
+            DrawSingleSliderGui("Reproduction Rate", 0f, 1f, _world.ReproductionSettings.ReproductionRate, ApplyReproductionRate, value => $"Rate: {FormatPercent(value)}", labelStyle);
+            DrawSingleSliderGui("Soldier Patrol Share", 0f, 1f, _world.SoldierControls.PatrolTargetShare, value => ApplySoldierControl(ControlTarget.PatrolShare, value), value => $"Patrol: {FormatPercent(value)}", labelStyle);
+            DrawSingleSliderGui("Tower Build Emphasis", 0f, 1f, _world.SoldierControls.TowerBuildEmphasis, value => ApplySoldierControl(ControlTarget.TowerEmphasis, value), value => $"Tower emphasis: {FormatPercent(value)}", labelStyle);
+            DrawProducerThresholdsGui(labelStyle, dimLabelStyle, controlGap, lineHeight);
+
+            GUILayout.Space(sectionGap);
+            GUILayout.Label("Diagnostics", headerStyle);
+            GUILayout.Space(controlGap);
+
+            GUILayout.Label("Central Stocks", labelStyle);
+            GUILayout.Label(CentralStockDisplay.CentralStockDisplayFormatter.Format(_facade.CentralStocks), dimLabelStyle);
+            GUILayout.Space(blockGap);
+
+            GUILayout.Label("Production Rates", labelStyle);
+            GUILayout.Label(ProductionRateDisplay.ProductionRateDisplayFormatter.Format(BuildProductionRateSnapshot()), dimLabelStyle);
+            GUILayout.Space(blockGap);
+
+            var population = _facade.PopulationByStage;
+            GUILayout.Label("Population", labelStyle);
+            GUILayout.Label(PopulationDisplay.PopulationDisplayFormatter.Format(
+                population.children,
+                population.adults,
+                population.elders), dimLabelStyle);
+            GUILayout.Space(blockGap);
+
+            var housing = _facade.HousingStats;
+            GUILayout.Label("Housing", labelStyle);
+            GUILayout.Label(HousingDisplay.HousingDisplayFormatter.Format(
+                housing.assignedAdults,
+                housing.unassignedAdults), dimLabelStyle);
+            GUILayout.Space(blockGap);
+
+            var activity = ActivityBreakdownDisplay.ActivitySnapshot.FromWorld(
+                _world.Agents,
+                _world.NaturalNodes,
+                _world.Buildings,
+                _world.Storage,
+                _world.ProfessionTargets,
+                1000);
+            GUILayout.Label("Activity", labelStyle);
+            GUILayout.Label(ActivityBreakdownDisplay.ActivityBreakdownDisplayFormatter.Format(activity), dimLabelStyle);
+            GUILayout.Space(blockGap);
+
+            var productivity = ProductivityDisplay.ProductivitySnapshot.FromAgents(_world.Agents);
+            GUILayout.Label("Productivity", labelStyle);
+            GUILayout.Label(ProductivityDisplay.ProductivityDisplayFormatter.Format(productivity), dimLabelStyle);
+
+            GUILayout.EndArea();
+            GUI.EndScrollView();
+        }
+
+        private void DrawProfessionTargetsGui(GUIStyle labelStyle, GUIStyle valueStyle, float controlGap)
+        {
+            GUILayout.Label("Profession Targets", labelStyle);
+            GUILayout.Space(controlGap);
+
+            float[] targets = _world.ProfessionTargets.GetTargetsCopy();
+            for (int i = 0; i < ProfessionLabels.Length && i < targets.Length; i++)
+            {
+                GUILayout.Label($"{ProfessionLabels[i]} target: {FormatPercent(targets[i])}", valueStyle);
+                float newValue = GUILayout.HorizontalSlider(targets[i], 0f, 1f);
+                if (!Mathf.Approximately(newValue, targets[i]))
+                {
+                    ApplyProfessionTarget(i, newValue);
+                }
+
+                GUILayout.Space(4f);
+            }
+
+            GUILayout.Space(controlGap);
+        }
+
+        private void DrawSingleSliderGui(
+            string title,
+            float minValue,
+            float maxValue,
+            float currentValue,
+            Action<float> onChanged,
+            Func<float, string> valueFormatter,
+            GUIStyle labelStyle)
+        {
+            GUILayout.Label(title, labelStyle);
+            GUILayout.Label(valueFormatter(currentValue), labelStyle);
+            float newValue = GUILayout.HorizontalSlider(currentValue, minValue, maxValue);
+            if (!Mathf.Approximately(newValue, currentValue))
+            {
+                onChanged?.Invoke(newValue);
+            }
+
+            GUILayout.Space(8f);
+        }
+
+        private void DrawProducerThresholdsGui(GUIStyle labelStyle, GUIStyle valueStyle, float controlGap, float lineHeight)
+        {
+            GUILayout.Label("Producer Thresholds", labelStyle);
+            GUILayout.Space(controlGap);
+
+            for (int i = 0; i < ProducerProfessions.Length; i++)
+            {
+                Profession profession = ProducerProfessions[i];
+                float start = ProducerThresholds.GetStartThreshold(profession);
+                float stop = ProducerThresholds.GetStopThreshold(profession);
+                GUILayout.Label($"{ProfessionLabels[(int)profession]} thresholds: start {FormatPercent(start)}, stop {FormatPercent(stop)}", valueStyle);
+
+                float newStart = GUILayout.HorizontalSlider(start, 0f, 1f);
+                if (!Mathf.Approximately(newStart, start))
+                {
+                    start = newStart;
+                }
+
+                float newStop = GUILayout.HorizontalSlider(stop, 0f, 1f);
+                if (!Mathf.Approximately(newStop, stop))
+                {
+                    stop = newStop;
+                }
+
+                if (start >= stop)
+                {
+                    if (newStart != start)
+                    {
+                        stop = Mathf.Clamp(start + 0.01f, 0f, 1f);
+                    }
+                    else
+                    {
+                        start = Mathf.Clamp(stop - 0.01f, 0f, 1f);
+                    }
+                }
+
+                ProducerThresholds.SetThresholds(profession, start, stop);
+                GUILayout.Space(lineHeight);
+            }
+
+            GUILayout.Space(controlGap);
         }
 
         private ProductionRateDisplay.ProductionRateSnapshot BuildProductionRateSnapshot()
@@ -602,11 +787,12 @@ namespace Civilizator.UI
 
         private Text CreateText(Transform parent, string value, int fontSize, FontStyle style, Color color)
         {
-            var go = new GameObject("Text", typeof(RectTransform), typeof(Text));
+            var go = new GameObject("Text", typeof(RectTransform));
             go.transform.SetParent(parent, false);
+            go.SetActive(false);
 
-            var text = go.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var text = go.AddComponent<Text>();
+            text.font = GetHudFont();
             text.text = value;
             text.fontSize = fontSize;
             text.fontStyle = style;
@@ -626,7 +812,41 @@ namespace Civilizator.UI
             layoutElement.minHeight = fontSize * 1.25f;
             layoutElement.preferredHeight = fontSize * 1.5f;
             layoutElement.flexibleWidth = 1f;
+            go.SetActive(true);
             return text;
+        }
+
+        private static Font GetHudFont()
+        {
+            if (_hudFont != null)
+            {
+                return _hudFont;
+            }
+
+            string[] fallbackFonts =
+            {
+                "Arial",
+                "Helvetica Neue",
+                "Liberation Sans"
+            };
+
+            foreach (string fontName in fallbackFonts)
+            {
+                try
+                {
+                    _hudFont = Font.CreateDynamicFontFromOSFont(fontName, 16);
+                    if (_hudFont != null)
+                    {
+                        return _hudFont;
+                    }
+                }
+                catch
+                {
+                    // Try the next fallback font.
+                }
+            }
+
+            throw new InvalidOperationException("Unable to create a HUD font from the local operating system fonts.");
         }
 
         private Slider CreateSlider(Transform parent, float minValue, float maxValue, Action<float> onChanged)
@@ -716,16 +936,14 @@ namespace Civilizator.UI
             layout.childForceExpandHeight = false;
             layout.spacing = RowSpacing;
 
-            var fitter = content.gameObject.AddComponent<ContentSizeFitter>();
-            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
             var scrollRect = root.gameObject.AddComponent<ScrollRect>();
             scrollRect.viewport = viewport;
             scrollRect.content = content;
             scrollRect.horizontal = false;
             scrollRect.vertical = true;
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
+
+            content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, EstimatedScrollContentHeight);
 
             var layoutElement = root.gameObject.AddComponent<LayoutElement>();
             layoutElement.flexibleHeight = 1f;
@@ -771,6 +989,20 @@ namespace Civilizator.UI
             layoutElement.minHeight = 0f;
 
             return panel;
+        }
+
+        private static void FinalizeHudLayout(ScrollRectHandle scrollView)
+        {
+            if (scrollView.Content == null || scrollView.ScrollRect == null)
+            {
+                return;
+            }
+
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollView.Content);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollView.Viewport);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollView.Root);
+            scrollView.ScrollRect.verticalNormalizedPosition = 1f;
         }
 
         private string FormatPercent(float value)
