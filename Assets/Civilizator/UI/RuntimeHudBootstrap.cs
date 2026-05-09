@@ -368,9 +368,19 @@ namespace Civilizator.UI
                 normal = { textColor = Color.white }
             };
 
+            var controlLabelStyle = new GUIStyle(labelStyle)
+            {
+                wordWrap = false
+            };
+
             var dimLabelStyle = new GUIStyle(labelStyle)
             {
                 normal = { textColor = new Color(0.73f, 0.79f, 0.86f, 1f) }
+            };
+
+            var dimControlLabelStyle = new GUIStyle(dimLabelStyle)
+            {
+                wordWrap = false
             };
 
             Rect panelRect = new Rect(margin, margin, panelWidth, Screen.height - (margin * 2f));
@@ -392,11 +402,11 @@ namespace Civilizator.UI
             GUILayout.Label("Player Controls", headerStyle);
             GUILayout.Space(controlGap);
 
-            DrawProfessionTargetsGui(labelStyle, dimLabelStyle, controlGap);
-            DrawSingleSliderGui("Reproduction Rate", 0f, 1f, _world.ReproductionSettings.ReproductionRate, ApplyReproductionRate, value => $"Rate: {FormatPercent(value)}", labelStyle);
-            DrawSingleSliderGui("Soldier Patrol Share", 0f, 1f, _world.SoldierControls.PatrolTargetShare, value => ApplySoldierControl(ControlTarget.PatrolShare, value), value => $"Patrol: {FormatPercent(value)}", labelStyle);
-            DrawSingleSliderGui("Tower Build Emphasis", 0f, 1f, _world.SoldierControls.TowerBuildEmphasis, value => ApplySoldierControl(ControlTarget.TowerEmphasis, value), value => $"Tower emphasis: {FormatPercent(value)}", labelStyle);
-            DrawProducerThresholdsGui(labelStyle, dimLabelStyle, controlGap, lineHeight);
+            DrawProfessionTargetsGui(controlLabelStyle, dimControlLabelStyle, controlGap);
+            DrawSingleSliderGui("Reproduction Rate", 0f, 1f, _world.ReproductionSettings.ReproductionRate, ApplyReproductionRate, value => $"Rate: {FormatPercent(value)}", controlLabelStyle, dimControlLabelStyle);
+            DrawSingleSliderGui("Soldier Patrol Share", 0f, 1f, _world.SoldierControls.PatrolTargetShare, value => ApplySoldierControl(ControlTarget.PatrolShare, value), value => $"Patrol: {FormatPercent(value)}", controlLabelStyle, dimControlLabelStyle);
+            DrawSingleSliderGui("Tower Build Emphasis", 0f, 1f, _world.SoldierControls.TowerBuildEmphasis, value => ApplySoldierControl(ControlTarget.TowerEmphasis, value), value => $"Tower emphasis: {FormatPercent(value)}", controlLabelStyle, dimControlLabelStyle);
+            DrawProducerThresholdsGui(controlLabelStyle, dimControlLabelStyle, controlGap, lineHeight);
 
             GUILayout.Space(sectionGap);
             GUILayout.Label("Diagnostics", headerStyle);
@@ -452,8 +462,11 @@ namespace Civilizator.UI
             float[] targets = _world.ProfessionTargets.GetTargetsCopy();
             for (int i = 0; i < ProfessionLabels.Length && i < targets.Length; i++)
             {
-                GUILayout.Label($"{ProfessionLabels[i]} target: {FormatPercent(targets[i])}", valueStyle);
-                float newValue = GUILayout.HorizontalSlider(targets[i], 0f, 1f);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(ProfessionLabels[i], valueStyle, GUILayout.Width(120f));
+                GUILayout.Label(FormatPercent(targets[i]), valueStyle, GUILayout.Width(64f));
+                float newValue = GUILayout.HorizontalSlider(targets[i], 0f, 1f, GUILayout.ExpandWidth(true));
+                GUILayout.EndHorizontal();
                 if (!Mathf.Approximately(newValue, targets[i]))
                 {
                     ApplyProfessionTarget(i, newValue);
@@ -472,11 +485,14 @@ namespace Civilizator.UI
             float currentValue,
             Action<float> onChanged,
             Func<float, string> valueFormatter,
-            GUIStyle labelStyle)
+            GUIStyle labelStyle,
+            GUIStyle valueStyle)
         {
-            GUILayout.Label(title, labelStyle);
-            GUILayout.Label(valueFormatter(currentValue), labelStyle);
-            float newValue = GUILayout.HorizontalSlider(currentValue, minValue, maxValue);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(title, labelStyle, GUILayout.Width(180f));
+            GUILayout.Label(valueFormatter(currentValue), valueStyle, GUILayout.Width(140f));
+            float newValue = GUILayout.HorizontalSlider(currentValue, minValue, maxValue, GUILayout.ExpandWidth(true));
+            GUILayout.EndHorizontal();
             if (!Mathf.Approximately(newValue, currentValue))
             {
                 onChanged?.Invoke(newValue);
@@ -495,23 +511,38 @@ namespace Civilizator.UI
                 Profession profession = ProducerProfessions[i];
                 float start = ProducerThresholds.GetStartThreshold(profession);
                 float stop = ProducerThresholds.GetStopThreshold(profession);
-                GUILayout.Label($"{ProfessionLabels[(int)profession]} thresholds: start {FormatPercent(start)}, stop {FormatPercent(stop)}", valueStyle);
+                bool startChanged = false;
+                bool stopChanged = false;
 
-                float newStart = GUILayout.HorizontalSlider(start, 0f, 1f);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(ProfessionLabels[(int)profession], valueStyle, GUILayout.Width(120f));
+                GUILayout.Label($"start {FormatPercent(start)}", valueStyle, GUILayout.Width(96f));
+                float newStart = GUILayout.HorizontalSlider(start, 0f, 1f, GUILayout.Width(140f));
+                GUILayout.Label($"stop {FormatPercent(stop)}", valueStyle, GUILayout.Width(96f));
+                float newStop = GUILayout.HorizontalSlider(stop, 0f, 1f, GUILayout.ExpandWidth(true));
+                GUILayout.EndHorizontal();
                 if (!Mathf.Approximately(newStart, start))
                 {
                     start = newStart;
+                    startChanged = true;
                 }
-
-                float newStop = GUILayout.HorizontalSlider(stop, 0f, 1f);
                 if (!Mathf.Approximately(newStop, stop))
                 {
                     stop = newStop;
+                    stopChanged = true;
                 }
 
                 if (start >= stop)
                 {
-                    if (newStart != start)
+                    if (startChanged && !stopChanged)
+                    {
+                        stop = Mathf.Clamp(start + 0.01f, 0f, 1f);
+                    }
+                    else if (stopChanged && !startChanged)
+                    {
+                        start = Mathf.Clamp(stop - 0.01f, 0f, 1f);
+                    }
+                    else if (startChanged)
                     {
                         stop = Mathf.Clamp(start + 0.01f, 0f, 1f);
                     }
@@ -823,6 +854,19 @@ namespace Civilizator.UI
                 return _hudFont;
             }
 
+            try
+            {
+                _hudFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                if (_hudFont != null)
+                {
+                    return _hudFont;
+                }
+            }
+            catch
+            {
+                // Fall back to OS fonts below.
+            }
+
             string[] fallbackFonts =
             {
                 "Arial",
@@ -986,7 +1030,9 @@ namespace Civilizator.UI
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             var layoutElement = panel.gameObject.AddComponent<LayoutElement>();
-            layoutElement.minHeight = 0f;
+            layoutElement.minHeight = 110f;
+            layoutElement.preferredHeight = 110f;
+            layoutElement.flexibleWidth = 1f;
 
             return panel;
         }
