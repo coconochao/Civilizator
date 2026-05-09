@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace Civilizator.Presentation
@@ -179,10 +180,26 @@ namespace Civilizator.Presentation
                 _cameraRig.Pan(panInput * (_panSpeed * deltaTime));
             }
 
+            if (ShouldIgnoreMouseZoomOverUi() && IsMouseScrollZoomInput())
+            {
+                return;
+            }
+
             if (Mathf.Abs(zoomInput) > Mathf.Epsilon)
             {
                 _cameraRig.ZoomBy(-zoomInput * _zoomSpeed);
             }
+        }
+
+        private bool ShouldIgnoreMouseZoomOverUi()
+        {
+            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        }
+
+        private bool IsMouseScrollZoomInput()
+        {
+            var activeControl = _zoomAction?.activeControl;
+            return activeControl != null && activeControl.device is Mouse;
         }
     }
 }
