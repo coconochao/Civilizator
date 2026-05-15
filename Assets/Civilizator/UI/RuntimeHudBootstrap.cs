@@ -511,26 +511,25 @@ namespace Civilizator.UI
                 Profession profession = ProducerProfessions[i];
                 float start = ProducerThresholds.GetStartThreshold(profession);
                 float stop = ProducerThresholds.GetStopThreshold(profession);
-                bool startChanged = false;
-                bool stopChanged = false;
+                bool startChanged = DrawProducerThresholdSlider(
+                    $"{ProfessionLabels[(int)profession]} start",
+                    start,
+                    0f,
+                    1f,
+                    value => start = value,
+                    labelStyle,
+                    valueStyle);
 
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(ProfessionLabels[(int)profession], valueStyle, GUILayout.Width(120f));
-                GUILayout.Label($"start {FormatPercent(start)}", valueStyle, GUILayout.Width(96f));
-                float newStart = GUILayout.HorizontalSlider(start, 0f, 1f, GUILayout.Width(140f));
-                GUILayout.Label($"stop {FormatPercent(stop)}", valueStyle, GUILayout.Width(96f));
-                float newStop = GUILayout.HorizontalSlider(stop, 0f, 1f, GUILayout.ExpandWidth(true));
-                GUILayout.EndHorizontal();
-                if (!Mathf.Approximately(newStart, start))
-                {
-                    start = newStart;
-                    startChanged = true;
-                }
-                if (!Mathf.Approximately(newStop, stop))
-                {
-                    stop = newStop;
-                    stopChanged = true;
-                }
+                GUILayout.Space(2f);
+
+                bool stopChanged = DrawProducerThresholdSlider(
+                    $"{ProfessionLabels[(int)profession]} stop",
+                    stop,
+                    0f,
+                    1f,
+                    value => stop = value,
+                    labelStyle,
+                    valueStyle);
 
                 if (start >= stop)
                 {
@@ -557,6 +556,30 @@ namespace Civilizator.UI
             }
 
             GUILayout.Space(controlGap);
+        }
+
+        private bool DrawProducerThresholdSlider(
+            string title,
+            float currentValue,
+            float minValue,
+            float maxValue,
+            Action<float> onValueChanged,
+            GUIStyle labelStyle,
+            GUIStyle valueStyle)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(title, labelStyle, GUILayout.Width(180f));
+            GUILayout.Label(FormatPercent(currentValue), valueStyle, GUILayout.Width(80f));
+            float newValue = GUILayout.HorizontalSlider(currentValue, minValue, maxValue, GUILayout.ExpandWidth(true));
+            GUILayout.EndHorizontal();
+
+            if (!Mathf.Approximately(newValue, currentValue))
+            {
+                onValueChanged?.Invoke(newValue);
+                return true;
+            }
+
+            return false;
         }
 
         private ProductionRateDisplay.ProductionRateSnapshot BuildProductionRateSnapshot()
